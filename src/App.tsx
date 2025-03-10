@@ -136,7 +136,7 @@ function App() {
             <div className="flex space-x-2">
               <button
                 onClick={() => setIsDashboardOpen(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 shadow-sm"
                 title="Ver dashboard financeiro"
               >
                 <PieChart className="w-4 h-4 mr-2" />
@@ -144,7 +144,7 @@ function App() {
               </button>
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow-sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Novo Serviço
@@ -153,7 +153,7 @@ function App() {
           </div>
 
           {isFormOpen ? (
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">
                 {editingService ? 'Editar Serviço' : 'Novo Serviço'}
               </h2>
@@ -169,9 +169,9 @@ function App() {
           ) : (
             <>
               {/* Campo de busca */}
-              <div className="mb-4 relative">
-                <div className="flex items-center border border-gray-300 rounded-md bg-white">
-                  <div className="pl-3">
+              <div className="mb-6 relative">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -179,11 +179,11 @@ function App() {
                     placeholder="Buscar por cliente ou placa..."
                     value={searchTerm}
                     onChange={(e) => filterServices(e.target.value)}
-                    className="block w-full py-2 pl-2 pr-3 border-0 rounded-md focus:ring-0 focus:outline-none text-sm"
+                    className="search-input w-full"
                   />
                 </div>
                 {searchTerm && (
-                  <div className="mt-1 text-sm text-gray-500">
+                  <div className="mt-2 text-sm text-gray-600">
                     {filteredServices.length} resultado(s) encontrado(s)
                   </div>
                 )}

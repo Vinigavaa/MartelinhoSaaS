@@ -107,59 +107,59 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Nome do Cliente</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente</label>
         <input
           type="text"
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="input-enhanced w-full"
           value={formData.client_name}
           onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Data do Serviço</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Data do Serviço</label>
         <input
           type="date"
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="input-enhanced w-full"
           value={formData.service_date}
           onChange={(e) => setFormData({ ...formData, service_date: e.target.value })}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Placa do Carro</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Placa do Carro</label>
         <input
           type="text"
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="input-enhanced w-full"
           value={formData.car_plate}
           onChange={(e) => setFormData({ ...formData, car_plate: e.target.value })}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Modelo do Carro</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Modelo do Carro</label>
         <input
           type="text"
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="input-enhanced w-full"
           value={formData.car_model}
           onChange={(e) => setFormData({ ...formData, car_model: e.target.value })}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Valor do Serviço</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Valor do Serviço</label>
         <input
           type="number"
           required
           step="0.01"
           min="0"
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="input-enhanced w-full"
           value={formData.service_value}
           onChange={(e) => setFormData({ ...formData, service_value: parseFloat(e.target.value) })}
         />
@@ -167,17 +167,17 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Peças Reparadas (selecione uma ou mais)</label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {REPAIRED_PARTS.map((part) => (
-            <div key={part} className="flex items-center">
+            <div key={part} className="flex items-center bg-gray-50 p-3 rounded-md border border-gray-200">
               <input
                 type="checkbox"
                 id={`part-${part}`}
                 checked={formData.repaired_parts.includes(part)}
                 onChange={() => handleRepairedPartsChange(part)}
-                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                className="checkbox-enhanced"
               />
-              <label htmlFor={`part-${part}`} className="ml-2 text-sm text-gray-700">
+              <label htmlFor={`part-${part}`} className="ml-3 text-sm text-gray-700">
                 {part.charAt(0).toUpperCase() + part.slice(1)}
               </label>
             </div>
@@ -185,17 +185,17 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2">
+      <div className="flex justify-end space-x-3 pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-md hover:bg-gray-50"
         >
           Cancelar
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border-2 border-blue-600 rounded-md hover:bg-blue-700"
         >
           {service ? 'Atualizar' : 'Cadastrar'}
         </button>
