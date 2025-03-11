@@ -190,14 +190,14 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       <Toaster position="top-right" />
       
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Serviços</h1>
-            <div className="flex space-x-2">
+      <div className="max-w-7xl mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
+        <div className="sm:px-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gerenciamento de Serviços</h1>
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setIsDashboardOpen(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 shadow-sm"
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 shadow-sm w-full sm:w-auto"
                 title="Ver dashboard financeiro"
               >
                 <PieChart className="w-4 h-4 mr-2" />
@@ -205,7 +205,7 @@ function App() {
               </button>
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow-sm"
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow-sm w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Novo Serviço
@@ -214,7 +214,7 @@ function App() {
           </div>
 
           {isFormOpen ? (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">
                 {editingService ? 'Editar Serviço' : 'Novo Serviço'}
               </h2>
@@ -250,7 +250,8 @@ function App() {
                 )}
               </div>
 
-              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+              {/* Tabela para desktop */}
+              <div className="hidden sm:block bg-white shadow overflow-hidden sm:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -328,22 +329,76 @@ function App() {
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                          {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhum serviço cadastrado'}
+                          {searchTerm ? 'Nenhum serviço encontrado para essa busca.' : 'Nenhum serviço cadastrado.'}
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Layout de cards para mobile */}
+              <div className="sm:hidden space-y-4">
+                {filteredServices.length > 0 ? (
+                  filteredServices.map((service) => (
+                    <div key={service.id} className="bg-white shadow rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="text-lg font-medium text-gray-900">{service.client_name}</div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          }).format(service.service_value)}
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-gray-600 mb-2">
+                        {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                      </div>
+                      
+                      <div className="text-sm text-gray-800 mb-2">
+                        {service.car_model} - {service.car_plate}
+                      </div>
+                      
+                      <div className="text-sm text-gray-800 mb-3">
+                        <span className="font-medium">Peças:</span> {formatRepairedParts(service.repaired_parts)}
+                      </div>
+                      
+                      <div className="flex justify-end space-x-4 border-t pt-3">
+                        <button
+                          onClick={() => handleGenerateInvoice(service)}
+                          className="text-green-600 hover:text-green-900"
+                          title="Gerar Nota Fiscal"
+                        >
+                          <FileText className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(service)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(service.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-white shadow rounded-lg p-6 text-center text-gray-500">
+                    {searchTerm ? 'Nenhum serviço encontrado para essa busca.' : 'Nenhum serviço cadastrado.'}
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
       </div>
 
-      {/* Dashboard Financeiro */}
-      {isDashboardOpen && (
-        <FinanceDashboard onClose={() => setIsDashboardOpen(false)} />
-      )}
+      {isDashboardOpen && <FinanceDashboard onClose={() => setIsDashboardOpen(false)} />}
     </div>
   );
 }

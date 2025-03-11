@@ -225,15 +225,16 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard Financeiro</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard Financeiro</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
+            aria-label="Fechar"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -244,38 +245,43 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Erro!</strong>
+            <span className="block sm:inline"> {error}</span>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {summaries.slice(0, 3).map((summary) => (
-                <div key={summary.period} className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 shadow">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">{summary.period}</h3>
-                  <p className="text-3xl font-bold text-blue-600">{formatCurrency(summary.total)}</p>
-                  <p className="text-sm text-gray-500 mt-2">{summary.count} serviço(s)</p>
-                </div>
-              ))}
+            {/* Resumo Financeiro */}
+            <div className="mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4">Resumo Financeiro</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {summaries.map((summary) => (
+                  <div key={summary.period} className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 sm:p-6 shadow">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">{summary.period}</h3>
+                    <p className="text-2xl sm:text-3xl font-bold text-blue-600">{formatCurrency(summary.total)}</p>
+                    <p className="text-sm text-gray-500 mt-2">{summary.count} serviço(s)</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Seletor de Mês Específico */}
-            <div className="mb-8">
-              <div className="bg-white border rounded-lg p-6 shadow">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2 md:mb-0">Dados por Mês Específico</h3>
-                  <div className="w-full md:w-auto">
-                    <select 
-                      className="select-enhanced w-full md:w-64"
-                      value={`${getMonth(selectedMonth)}-${getYear(selectedMonth)}`}
-                      onChange={handleMonthChange}
+            {/* Análise Mensal */}
+            <div className="mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4">Análise Mensal</h3>
+              <div className="bg-white border rounded-lg p-4 sm:p-6 shadow">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                  <div className="mb-2 sm:mb-0">
+                    <label htmlFor="month-select" className="block text-sm font-medium text-gray-700 mb-1">
+                      Selecione o mês:
+                    </label>
+                    <select
+                      id="month-select"
+                      value={selectedMonth.toISOString()}
+                      onChange={(e) => setSelectedMonth(new Date(e.target.value))}
+                      className="select-enhanced"
                     >
-                      {availableMonths.map((month, index) => (
-                        <option 
-                          key={index} 
-                          value={`${getMonth(month.value)}-${getYear(month.value)}`}
-                          className="capitalize"
-                        >
+                      {availableMonths.map((month) => (
+                        <option key={month.value.toISOString()} value={month.value.toISOString()}>
                           {month.label}
                         </option>
                       ))}
@@ -301,34 +307,56 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
                 {selectedMonthData.services.length > 0 ? (
                   <div className="mt-4 overflow-x-auto">
                     <h4 className="text-md font-semibold text-gray-700 mb-2">Serviços do Período</h4>
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Veículo</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {selectedMonthData.services.map((service) => (
-                          <tr key={service.id}>
-                            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                              {format(new Date(service.service_date), 'dd/MM/yyyy')}
-                            </td>
-                            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                              {service.client_name}
-                            </td>
-                            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                              {service.car_model} - {service.car_plate}
-                            </td>
-                            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                              {formatCurrency(service.service_value)}
-                            </td>
+                    
+                    {/* Tabela para desktop */}
+                    <div className="hidden sm:block">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Veículo</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {selectedMonthData.services.map((service) => (
+                            <tr key={service.id}>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                              </td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {service.client_name}
+                              </td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {service.car_model} - {service.car_plate}
+                              </td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(service.service_value)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Cards para mobile */}
+                    <div className="sm:hidden space-y-3">
+                      {selectedMonthData.services.map((service) => (
+                        <div key={service.id} className="bg-gray-50 p-3 rounded-lg">
+                          <div className="flex justify-between">
+                            <div className="font-medium">{service.client_name}</div>
+                            <div className="font-semibold text-blue-600">{formatCurrency(service.service_value)}</div>
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {service.car_model} - {service.car_plate}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-4 p-4 bg-gray-50 rounded text-center text-gray-500">
@@ -340,8 +368,8 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
 
             {/* Histórico de Meses Anteriores */}
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4">Histórico Mensal</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4">Histórico Mensal</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {monthlySummaries.slice(0, 6).map((summary, index) => {
                   const growth = calculateGrowth(index);
                   const isPositive = growth >= 0;
@@ -364,9 +392,10 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
               </div>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4">Resumo de Faturamento</h3>
-              <div className="overflow-x-auto">
+            {/* Tabela Completa - Apenas para desktop */}
+            <div className="hidden md:block mb-8">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4">Resumo de Faturamento</h3>
+              <div className="bg-white border rounded-lg shadow overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -443,7 +472,7 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
         <div className="mt-6 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 w-full sm:w-auto"
           >
             Fechar
           </button>
