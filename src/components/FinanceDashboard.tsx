@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subDays, subMonths, getYear, getMonth } from 'date-fns';
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subDays, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface FinanceSummary {
@@ -195,15 +195,6 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     }
   };
   
-  // Handler para mudança do mês selecionado
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const [month, year] = e.target.value.split('-').map(Number);
-    const newDate = new Date();
-    newDate.setFullYear(year);
-    newDate.setMonth(month);
-    setSelectedMonth(newDate);
-  };
-
   // Formatar valor como moeda brasileira
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
