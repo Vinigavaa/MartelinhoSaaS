@@ -1,8 +1,21 @@
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import { Service } from '../types';
+import { Service, NotaFiscal, ServicoNF } from '../types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'react-hot-toast';
+
+// Importar pdfMake e pdfFonts diretamente
+// @ts-ignore - Ignorando erros de tipagem do pdfMake
+import pdfMake from 'pdfmake/build/pdfmake';
+// @ts-ignore - Ignorando erros de tipagem do pdfFonts 
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+// Configurar pdfMake com as fontes
+// @ts-ignore - Ignorando erros de tipagem do pdfMake
+if (pdfMake && pdfFonts) {
+  // @ts-ignore - Ignorando erros de tipagem do pdfMake
+  pdfMake.vfs = pdfFonts.pdfMake?.vfs || {};
+}
 
 // Função auxiliar para formatar moeda
 const formatCurrency = (value: number | string): string => {
@@ -45,20 +58,19 @@ export async function generatePDFWithBlob(service: Service): Promise<boolean> {
  */
 export async function generatePDFWithDynamicImport(service: Service): Promise<boolean> {
   try {
-    // Importação dinâmica para evitar problemas com o vfs
-    const pdfMake = (await import('pdfmake/build/pdfmake')).default;
-    const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
-    
-    // Configurar fontes
-    if (pdfMake.vfs === undefined) {
-      pdfMake.vfs = pdfFonts && pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : {};
-    }
-    
     // Configuração do documento
     const docDefinition = createDocDefinition(service);
     
     return new Promise<boolean>((resolve) => {
       try {
+        // @ts-ignore - Ignorando erros de tipagem do pdfMake
+        if (!pdfMake) {
+          console.error('pdfMake não está definido');
+          resolve(false);
+          return;
+        }
+        
+        // @ts-ignore - Ignorando erros de tipagem do pdfMake
         pdfMake.createPdf(docDefinition).download(`nota-fiscal-${service.auth_code || Math.random().toString(36).substring(2, 10)}.pdf`);
         resolve(true);
       } catch (innerError) {
@@ -76,21 +88,19 @@ export async function generatePDFWithDynamicImport(service: Service): Promise<bo
  * Função auxiliar para gerar um Blob do PDF
  */
 export async function generatePDFBlob(service: Service): Promise<Blob> {
-  // Importação dinâmica para evitar problemas com o vfs
-  const pdfMake = (await import('pdfmake/build/pdfmake')).default;
-  const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
-  
-  // Configurar fontes
-  if (pdfMake.vfs === undefined) {
-    pdfMake.vfs = pdfFonts && pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : {};
-  }
-  
   // Configuração do documento
   const docDefinition = createDocDefinition(service);
   
   // Retorna uma Promise que resolve para um Blob
   return new Promise<Blob>((resolve, reject) => {
     try {
+      // @ts-ignore - Ignorando erros de tipagem do pdfMake
+      if (!pdfMake) {
+        reject(new Error('pdfMake não está definido'));
+        return;
+      }
+      
+      // @ts-ignore - Ignorando erros de tipagem do pdfMake
       pdfMake.createPdf(docDefinition).getBlob((blob) => {
         resolve(blob);
       });
@@ -287,7 +297,10 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
       
       {
         ul: service.repaired_parts
-      }
+      },
+      
+      // Adicionando condicionalmente as observações
+      ...createObservationsContentIfNeeded(service.observacoes)
     ],
     
     styles: {
@@ -306,6 +319,38 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
       color: '#374151'
     }
   };
+}
+
+/**
+ * Função auxiliar para criar elementos de observações condicionalmente
+ */
+function createObservationsContentIfNeeded(observacoes?: string): any[] {
+  if (!observacoes) return [];
+  
+  return [
+    {
+      text: 'OBSERVAÇÕES',
+      bold: true,
+      fontSize: 11,
+      margin: [0, 15, 0, 5] as [number, number, number, number],
+      color: '#2563EB'
+    },
+    {
+      style: 'tableExample',
+      table: {
+        widths: ['*'],
+        body: [
+          [{ text: observacoes, margin: [5, 5, 5, 5] as [number, number, number, number] }]
+        ]
+      },
+      layout: {
+        hLineWidth: function() { return 1; },
+        vLineWidth: function() { return 1; },
+        hLineColor: function() { return '#EAEAEA'; },
+        vLineColor: function() { return '#EAEAEA'; },
+      }
+    }
+  ];
 }
 
 // Função para gerar a nota fiscal em PDF
@@ -488,29 +533,8 @@ export const generateInvoicePDF = (notaFiscal: NotaFiscal): void => {
         ]
       },
       
-      notaFiscal.observacoes ? {
-        text: 'OBSERVAÇÕES',
-        bold: true,
-        fontSize: 11,
-        margin: [0, 15, 0, 5],
-        color: '#2563EB'
-      } : {},
-      
-      notaFiscal.observacoes ? {
-        style: 'tableExample',
-        table: {
-          widths: ['*'],
-          body: [
-            [{ text: notaFiscal.observacoes, margin: [5, 5, 5, 5] }]
-          ]
-        },
-        layout: {
-          hLineWidth: function() { return 1; },
-          vLineWidth: function() { return 1; },
-          hLineColor: function() { return '#EAEAEA'; },
-          vLineColor: function() { return '#EAEAEA'; },
-        }
-      } : {},
+      // Adicionar observações condicionalmente
+      ...createObservationsContentIfNeeded(notaFiscal.observacoes),
     ],
     
     footer: {
@@ -650,98 +674,112 @@ export async function generateAndDownloadPDF(service: Service): Promise<boolean>
 // Função para gerar PDF sem usar imagens
 async function generatePDFWithoutImages(service: Service): Promise<boolean> {
   try {
-    // Dinamicamente importar pdfmake para evitar problemas de inicialização
-    const pdfMake = (await import('pdfmake/build/pdfmake')).default;
-    const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
+    // Criar docDefinition sem imagens
+    const docDefinition = createSimpleDocDefinition(service);
     
-    // Configurar as fontes
-    if (pdfMake.vfs === undefined) {
-      pdfMake.vfs = pdfFonts && pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : {};
-    }
+    // Gerar e baixar o PDF
+    return new Promise<boolean>((resolve) => {
+      try {
+        // @ts-ignore - Ignorando erros de tipagem do pdfMake
+        if (!pdfMake) {
+          console.error('pdfMake não está definido');
+          resolve(false);
+          return;
+        }
+        
+        // @ts-ignore - Ignorando erros de tipagem do pdfMake
+        pdfMake.createPdf(docDefinition).download(`nota-fiscal-${service.auth_code || Math.random().toString(36).substring(2, 10)}.pdf`);
+        resolve(true);
+      } catch (innerError) {
+        console.error('Erro ao gerar PDF sem imagens:', innerError);
+        resolve(false);
+      }
+    });
+  } catch (error) {
+    console.error('Erro no método sem imagens:', error);
+    return false;
+  }
+}
 
-    // Criar o documento sem imagens
-    const docDefinition: TDocumentDefinitions = {
-      pageSize: 'A4',
-      pageMargins: [40, 60, 40, 60],
+// Gera um código de autenticação aleatório
+const generateAuthCode = (): string => {
+  return 'AC' + Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
+/**
+ * Cria uma definição de documento simplificada sem imagens
+ */
+function createSimpleDocDefinition(service: Service): TDocumentDefinitions {
+  return {
+    pageSize: 'A4',
+    pageMargins: [40, 60, 40, 60],
+    
+    content: [
+      { text: 'MARTELINHO DE OURO', style: 'header' },
+      { text: 'NOTA FISCAL DE SERVIÇO', style: 'subheader' },
+      { text: `Código de Autenticação: ${service.auth_code || 'N/A'}`, style: 'auth' },
+      { text: `Data: ${service.service_date ? format(new Date(service.service_date), 'dd/MM/yyyy') : 'N/A'}`, margin: [0, 10, 0, 0] },
+      { text: 'INFORMAÇÕES DO CLIENTE', style: 'sectionHeader', margin: [0, 15, 0, 5] },
+      { text: `Nome: ${service.client_name}` },
+      { text: `Placa do Veículo: ${service.car_plate}` },
+      { text: `Modelo do Veículo: ${service.car_model}` },
       
-      content: [
-        { text: 'MARTELINHO DE OURO', style: 'header' },
-        { text: 'NOTA FISCAL DE SERVIÇO', style: 'subheader' },
-        { text: `Código de Autenticação: ${service.auth_code || 'N/A'}`, style: 'auth' },
-        { text: `Data: ${service.service_date ? format(new Date(service.service_date), 'dd/MM/yyyy') : 'N/A'}`, margin: [0, 10, 0, 0] },
-        { text: 'INFORMAÇÕES DO CLIENTE', style: 'sectionHeader', margin: [0, 15, 0, 5] },
-        { text: `Nome: ${service.client_name}` },
-        { text: `Placa do Veículo: ${service.car_plate}` },
-        { text: `Modelo do Veículo: ${service.car_model}` },
-        
-        { text: 'DETALHES DO SERVIÇO', style: 'sectionHeader', margin: [0, 15, 0, 5] },
-        {
-          table: {
-            widths: ['*', 'auto'],
-            body: [
-              [{ text: 'Descrição', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
-              ['Serviço de Funilaria e Pintura', { text: `R$ ${service.service_value}`, alignment: 'right' }]
-            ]
-          }
-        },
-        
-        { text: 'PEÇAS REPARADAS', style: 'sectionHeader', margin: [0, 15, 0, 5] },
-        {
-          ul: service.repaired_parts
-        },
-        
-        { text: 'TERMOS E CONDIÇÕES', style: 'sectionHeader', margin: [0, 15, 0, 5] },
-        { text: 'A garantia deste serviço é válida por 90 dias a partir da data de emissão desta nota fiscal.' },
-        { text: 'O pagamento deve ser realizado no ato da entrega do veículo.' },
-        
-        { text: 'ASSINATURAS', style: 'sectionHeader', margin: [0, 25, 0, 5] },
-        {
-          columns: [
-            { text: '___________________________\nAssinatura do Cliente', alignment: 'center' },
-            { text: '___________________________\nAssinatura do Responsável', alignment: 'center' }
+      { text: 'DETALHES DO SERVIÇO', style: 'sectionHeader', margin: [0, 15, 0, 5] },
+      {
+        table: {
+          widths: ['*', 'auto'],
+          body: [
+            [{ text: 'Descrição', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
+            ['Serviço de Funilaria e Pintura', { text: `R$ ${service.service_value}`, alignment: 'right' }]
           ]
         }
-      ],
+      },
       
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          alignment: 'center',
-          color: '#2563EB'
-        },
-        subheader: {
-          fontSize: 14,
-          bold: true,
-          alignment: 'center',
-          margin: [0, 5, 0, 10]
-        },
-        auth: {
-          fontSize: 10,
-          alignment: 'center',
-          margin: [0, 5, 0, 15]
-        },
-        sectionHeader: {
-          fontSize: 12,
-          bold: true,
-          color: '#2563EB'
-        },
-        tableHeader: {
-          bold: true,
-          fillColor: '#f3f4f6'
-        }
+      { text: 'PEÇAS REPARADAS', style: 'sectionHeader', margin: [0, 15, 0, 5] },
+      {
+        ul: service.repaired_parts
+      },
+      
+      { text: 'TERMOS E CONDIÇÕES', style: 'sectionHeader', margin: [0, 15, 0, 5] },
+      { text: 'A garantia deste serviço é válida por 90 dias a partir da data de emissão desta nota fiscal.' },
+      { text: 'O pagamento deve ser realizado no ato da entrega do veículo.' },
+      
+      { text: 'ASSINATURAS', style: 'sectionHeader', margin: [0, 25, 0, 5] },
+      {
+        columns: [
+          { text: '___________________________\nAssinatura do Cliente', alignment: 'center' },
+          { text: '___________________________\nAssinatura do Responsável', alignment: 'center' }
+        ]
       }
-    };
-
-    // Gerar o PDF e baixá-lo
-    const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+    ],
     
-    pdfDocGenerator.download(`nota-fiscal-${service.auth_code || Math.random().toString(36).substring(2, 10)}.pdf`);
-    
-    toast.success('PDF gerado sem imagens e baixado com sucesso!');
-    return true;
-  } catch (error) {
-    console.error('Erro ao gerar PDF sem imagens:', error);
-    throw error;
-  }
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        alignment: 'center',
+        color: '#2563EB'
+      },
+      subheader: {
+        fontSize: 14,
+        bold: true,
+        alignment: 'center',
+        margin: [0, 5, 0, 10]
+      },
+      auth: {
+        fontSize: 10,
+        alignment: 'center',
+        margin: [0, 5, 0, 15]
+      },
+      sectionHeader: {
+        fontSize: 12,
+        bold: true,
+        color: '#2563EB'
+      },
+      tableHeader: {
+        bold: true,
+        fillColor: '#f3f4f6'
+      }
+    }
+  };
 } 

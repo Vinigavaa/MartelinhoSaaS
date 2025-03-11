@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Plus, Search, PieChart, FileText } from 'lucide-react';
 import { ServiceForm } from './components/ServiceForm';
@@ -34,21 +34,26 @@ function App() {
     
     // Garantir que todos os serviços tenham o campo repaired_parts como array
     const processedData = data?.map(service => {
+      let repairedParts: string[] = [];
+
       // Para compatibilidade com registros antigos que têm repaired_part (string)
-      if (!service.repaired_parts && service.repaired_part) {
-        return {
-          ...service,
-          repaired_parts: [service.repaired_part]
-        };
+      if (service.repaired_part && typeof service.repaired_part === 'string') {
+        repairedParts = [service.repaired_part];
       }
-      // Garantir que repaired_parts seja sempre um array
-      if (!Array.isArray(service.repaired_parts)) {
-        return {
-          ...service,
-          repaired_parts: []
-        };
+      
+      // Se repaired_parts existir e for um array, use-o
+      if (service.repaired_parts && Array.isArray(service.repaired_parts)) {
+        repairedParts = service.repaired_parts.filter((part: any) => part && typeof part === 'string');
       }
-      return service;
+
+      // Garantir que auth_code seja uma string válida
+      const authCode = service.auth_code || `AC${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+      return {
+        ...service,
+        repaired_parts: repairedParts,
+        auth_code: authCode
+      };
     });
     
     setServices(processedData || []);
@@ -115,15 +120,40 @@ function App() {
   };
 
   // Formatar as peças reparadas para exibição
-  const formatRepairedParts = (parts: string[]) => {
-    if (!parts || parts.length === 0) return '-';
+  const formatRepairedParts = (parts: any): string => {
+    // Verificação mais rigorosa para diferentes tipos de entrada
+    if (!parts) return '-';
     
-    // Capitalize primeira letra de cada peça
-    const formattedParts = parts.map(part => 
-      part.charAt(0).toUpperCase() + part.slice(1)
-    );
+    // Se não for um array, tenta converter para array se possível
+    let partsArray: string[] = [];
     
-    return formattedParts.join(', ');
+    if (Array.isArray(parts)) {
+      partsArray = parts;
+    } else if (typeof parts === 'string') {
+      partsArray = [parts];
+    } else if (typeof parts === 'object') {
+      try {
+        // Tenta extrair valores se for um objeto
+        const values = Object.values(parts).filter(Boolean);
+        partsArray = values.map(val => String(val));
+      } catch (e) {
+        return '-';
+      }
+    } else {
+      return '-';
+    }
+    
+    // Filtra e formata cada parte
+    const formattedParts = partsArray
+      .filter(part => part !== null && part !== undefined)
+      .map(part => {
+        const partStr = String(part).trim();
+        if (!partStr) return '';
+        return partStr.charAt(0).toUpperCase() + partStr.slice(1).toLowerCase();
+      })
+      .filter(part => part !== '');
+    
+    return formattedParts.length > 0 ? formattedParts.join(', ') : '-';
   };
 
   // Função para gerar a nota fiscal em PDF
@@ -131,14 +161,22 @@ function App() {
     try {
       toast.loading('Gerando nota fiscal...');
       
-      // Chamar a função aprimorada que tenta múltiplos métodos
-      const success = await generateAndDownloadPDF(service);
+      // Garantir que repaired_parts seja um array válido
+      const serviceToUse = {
+        ...service,
+        repaired_parts: Array.isArray(service.repaired_parts) 
+          ? service.repaired_parts.filter(part => part && typeof part === 'string')
+          : [],
+        auth_code: service.auth_code || `AC${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+      };
       
+      // Chamar a função aprimorada que tenta múltiplos métodos
+      const success = await generateAndDownloadPDF(serviceToUse);
+      
+      toast.dismiss();
       if (success) {
-        toast.dismiss();
         toast.success('Nota fiscal gerada com sucesso!');
       } else {
-        toast.dismiss();
         toast.error('Erro ao gerar a nota fiscal. Tente novamente.');
       }
     } catch (error) {
