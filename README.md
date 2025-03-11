@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/Vite-5.1.4-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/Supabase-2.39.7-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/TailwindCSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
+  <img src="https://img.shields.io/badge/PDFMake-0.2.7-ED1C24?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white" alt="PDFMake" />
 </p>
 
 ## 📋 Índice
@@ -17,13 +18,14 @@
 - [Instalação](#-instalação)
 - [Configuração do Supabase](#-configuração-do-supabase)
 - [Executando o Projeto](#-executando-o-projeto)
+- [Geração de Notas Fiscais](#-geração-de-notas-fiscais)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Solução de Problemas](#-solução-de-problemas)
 - [Licença](#-licença)
 
 ## 🔍 Visão Geral
 
-Um sistema completo de gerenciamento para oficinas de reparos automotivos, permitindo cadastrar, visualizar, editar e excluir serviços realizados. Inclui funcionalidades de busca, seleção de múltiplas peças reparadas e um dashboard financeiro para acompanhamento do faturamento.
+Um sistema completo de gerenciamento para oficinas de reparos automotivos, permitindo cadastrar, visualizar, editar e excluir serviços realizados. Inclui funcionalidades de busca, seleção de múltiplas peças reparadas, um dashboard financeiro para acompanhamento do faturamento e geração de notas fiscais em PDF.
 
 ![Dashboard da Aplicação](https://via.placeholder.com/800x400?text=Dashboard+da+Aplicação)
 
@@ -43,6 +45,11 @@ Um sistema completo de gerenciamento para oficinas de reparos automotivos, permi
   - Histórico de faturamento por mês
   - Seleção de mês específico para análise detalhada
 
+- **Geração de Documentos**:
+  - Geração de notas fiscais em PDF
+  - Download automático das notas fiscais
+  - Sistema robusto com múltiplos métodos de geração de PDF
+
 ## 🚀 Tecnologias
 
 - **Frontend**: React, TypeScript, TailwindCSS
@@ -52,6 +59,7 @@ Um sistema completo de gerenciamento para oficinas de reparos automotivos, permi
 - **Formatação de Data**: date-fns
 - **Ícones**: Lucide React
 - **Notificações**: React Hot Toast
+- **Geração de PDF**: PDFMake
 
 ## 📋 Pré-requisitos
 
@@ -111,6 +119,7 @@ CREATE TABLE IF NOT EXISTS public.services (
     service_value DECIMAL(10, 2) NOT NULL,
     repaired_parts TEXT[] DEFAULT '{}',
     repaired_part TEXT,
+    auth_code TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -164,6 +173,29 @@ Para visualizar a versão de produção localmente:
 npm run preview
 ```
 
+## 📄 Geração de Notas Fiscais
+
+O sistema permite gerar notas fiscais em PDF para os serviços cadastrados. Essa funcionalidade utiliza a biblioteca PDFMake e implementa múltiplos métodos de geração para garantir compatibilidade em diferentes navegadores e ambientes.
+
+### Características da Geração de PDF
+
+- **Geração com Um Clique**: Basta clicar no ícone de PDF na tabela de serviços
+- **Download Automático**: O arquivo é baixado automaticamente com o nome `nota-fiscal-XXXXXXXX.pdf`, onde XXXXXXXX é o código de autenticação
+- **Múltiplos Métodos de Geração**: Sistema de fallback com três abordagens diferentes:
+  1. Geração via Blob (mais confiável)
+  2. Geração com importação dinâmica (evita problemas de inicialização)
+  3. Geração padrão (compatibilidade)
+- **Tratamento de Erros**: Detecção automática de erros de imagem e geração alternativa sem imagens
+- **Feedback Visual**: Notificações toast informando o progresso e resultado da geração
+
+### Onde Encontrar o PDF Gerado
+
+Após clicar no botão para gerar a nota fiscal, o arquivo PDF será automaticamente baixado para a pasta de downloads padrão do seu navegador. Se o download não iniciar automaticamente:
+
+1. Verifique a barra de downloads do seu navegador
+2. Verifique a pasta de downloads configurada no seu navegador
+3. Verifique se o navegador não está bloqueando downloads
+
 ## 📁 Estrutura do Projeto
 
 ```
@@ -173,7 +205,8 @@ projeto/
 │   │   ├── ServiceForm.tsx # Formulário de serviços
 │   │   └── FinanceDashboard.tsx # Dashboard financeiro
 │   ├── lib/
-│   │   └── supabase.ts     # Configuração do cliente Supabase
+│   │   ├── supabase.ts     # Configuração do cliente Supabase
+│   │   └── generateInvoicePDF.ts # Lógica de geração de PDF
 │   ├── App.tsx             # Componente principal
 │   ├── main.tsx            # Ponto de entrada
 │   ├── types.ts            # Tipos e interfaces TypeScript
@@ -225,6 +258,24 @@ WHERE repaired_part IS NOT NULL AND (repaired_parts IS NULL OR repaired_parts = 
 -- Atualizar o cache do Postgrest
 NOTIFY pgrst, 'reload schema';
 ```
+
+### Erro "Invalid image: Error: Incomplete or corrupt PNG file"
+
+Se você encontrar este erro ao gerar notas fiscais:
+
+1. O sistema tem um tratamento automático que removerá as imagens e tentará gerar o PDF novamente
+2. Se o erro persistir, verifique se o campo `auth_code` existe na tabela `services`:
+
+```sql
+-- Adicionar o campo auth_code se não existir
+ALTER TABLE public.services
+ADD COLUMN IF NOT EXISTS auth_code TEXT;
+
+-- Atualizar o cache do Postgrest
+NOTIFY pgrst, 'reload schema';
+```
+
+3. Se mesmo assim o problema continuar, limpe o cache do navegador e tente novamente
 
 ## 📄 Licença
 

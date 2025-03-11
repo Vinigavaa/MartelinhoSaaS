@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Pencil, Trash2, Plus, Search, PieChart } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search, PieChart, FileText } from 'lucide-react';
 import { ServiceForm } from './components/ServiceForm';
 import { FinanceDashboard } from './components/FinanceDashboard';
 import { Service } from './types';
 import { supabase } from './lib/supabase';
 import toast, { Toaster } from 'react-hot-toast';
+import { generateAndDownloadPDF } from './lib/generateInvoicePDF';
 
 function App() {
   const [services, setServices] = useState<Service[]>([]);
@@ -123,6 +124,28 @@ function App() {
     );
     
     return formattedParts.join(', ');
+  };
+
+  // Função para gerar a nota fiscal em PDF
+  const handleGenerateInvoice = async (service: Service) => {
+    try {
+      toast.loading('Gerando nota fiscal...');
+      
+      // Chamar a função aprimorada que tenta múltiplos métodos
+      const success = await generateAndDownloadPDF(service);
+      
+      if (success) {
+        toast.dismiss();
+        toast.success('Nota fiscal gerada com sucesso!');
+      } else {
+        toast.dismiss();
+        toast.error('Erro ao gerar a nota fiscal. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Erro ao gerar a nota fiscal:', error);
+      toast.dismiss();
+      toast.error('Erro ao gerar a nota fiscal. Tente novamente.');
+    }
   };
 
   return (
@@ -243,8 +266,15 @@ function App() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
+                              onClick={() => handleGenerateInvoice(service)}
+                              className="text-green-600 hover:text-green-900 mr-3"
+                              title="Gerar Nota Fiscal"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </button>
+                            <button
                               onClick={() => handleEdit(service)}
-                              className="text-blue-600 hover:text-blue-900 mr-4"
+                              className="text-blue-600 hover:text-blue-900 mr-3"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
