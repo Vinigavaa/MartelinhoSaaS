@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 import { Pencil, Trash2, Plus, Search, PieChart, FileText } from 'lucide-react';
 import { ServiceForm } from './components/ServiceForm';
 import { FinanceDashboard } from './components/FinanceDashboard';
@@ -7,6 +8,12 @@ import { Service } from './types';
 import { supabase } from './lib/supabase';
 import toast, { Toaster } from 'react-hot-toast';
 import { generateAndDownloadPDF } from './lib/generateInvoicePDF';
+
+const formatLocalDate = (dateString: string) => {
+  // Garantir que a data seja tratada como meio-dia UTC para evitar problemas de fuso horário
+  const date = new Date(`${dateString.split('T')[0]}T12:00:00Z`);
+  return format(date, 'dd/MM/yyyy', { locale: pt });
+};
 
 function App() {
   const [services, setServices] = useState<Service[]>([]);
@@ -19,6 +26,7 @@ function App() {
   const fetchServices = async () => {
     console.log('Tentando buscar serviços...');
     
+    // Adicionar formato padronizado para garantir que os pedidos sejam exibidos na ordem correta
     const { data, error } = await supabase
       .from('services')
       .select('*')
@@ -33,6 +41,7 @@ function App() {
     console.log('Serviços carregados com sucesso:', data);
     
     // Garantir que todos os serviços tenham o campo repaired_parts como array
+    // e que as datas estejam padronizadas para evitar problemas de fuso horário
     const processedData = data?.map(service => {
       let repairedParts: string[] = [];
 
@@ -49,10 +58,19 @@ function App() {
       // Garantir que auth_code seja uma string válida
       const authCode = service.auth_code || `AC${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
+      // Padronizar o formato da data para evitar problemas de fuso horário
+      let standardizedDate = service.service_date;
+      
+      // Se a data não tiver o horário fixado em 12:00, ajuste para o formato padronizado
+      if (standardizedDate && !standardizedDate.includes('T12:00:00')) {
+        standardizedDate = `${standardizedDate.split('T')[0]}T12:00:00`;
+      }
+
       return {
         ...service,
         repaired_parts: repairedParts,
-        auth_code: authCode
+        auth_code: authCode,
+        service_date: standardizedDate
       };
     });
     
@@ -284,7 +302,7 @@ function App() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                              {formatLocalDate(service.service_date)}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -353,7 +371,7 @@ function App() {
                       </div>
                       
                       <div className="text-sm text-gray-600 mb-2">
-                        {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                        {formatLocalDate(service.service_date)}
                       </div>
                       
                       <div className="text-sm text-gray-800 mb-2">

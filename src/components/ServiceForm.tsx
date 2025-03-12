@@ -53,11 +53,19 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
     try {
       console.log('Enviando dados para o Supabase:', formData);
       
+      // Garantir que a data seja preservada corretamente sem problema de fuso horário
+      // Adiciona a hora 12:00 para evitar qualquer problema de conversão de timezone
+      const fixedDate = formData.service_date ? 
+        `${formData.service_date}T12:00:00` : 
+        new Date().toISOString().split('T')[0] + 'T12:00:00';
+      
       if (service?.id) {
         const { error } = await supabase
           .from('services')
           .update({
             ...formData,
+            // Substituir a data pelo valor corrigido com horário fixo
+            service_date: fixedDate,
             // Adicionar também o primeiro item para a coluna antiga (para compatibilidade)
             repaired_part: formData.repaired_parts[0] || null,
             updated_at: new Date().toISOString()
@@ -73,6 +81,8 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
         // Dados para enviar
         const dataToSend = {
           ...formData,
+          // Substituir a data pelo valor corrigido com horário fixo
+          service_date: fixedDate,
           // Garantir que o valor do serviço seja um número
           service_value: typeof formData.service_value === 'string' 
             ? parseFloat(formData.service_value) 

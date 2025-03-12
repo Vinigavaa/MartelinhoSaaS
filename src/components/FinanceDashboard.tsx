@@ -40,6 +40,9 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
   // Gerar os meses disponíveis para seleção (12 meses anteriores + mês atual)
   const generateAvailableMonths = () => {
     const now = new Date();
+    // Definir meio-dia para evitar problemas de fuso horário
+    now.setHours(12, 0, 0, 0);
+    
     const months = [];
     
     // Mês atual
@@ -51,6 +54,9 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     // 24 meses anteriores
     for (let i = 1; i <= 24; i++) {
       const monthDate = subMonths(now, i);
+      // Garantir que cada data tenha horário meio-dia
+      monthDate.setHours(12, 0, 0, 0);
+      
       months.push({
         value: monthDate,
         label: format(monthDate, 'MMMM yyyy', { locale: ptBR })
@@ -67,43 +73,47 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     try {
       const now = new Date();
       
-      // Definir os períodos de tempo para os dados atuais
+      // Definir os períodos de tempo para os dados atuais com horário fixo
+      const formatDateWithFixedTime = (date: Date) => {
+        return `${format(date, 'yyyy-MM-dd')}T12:00:00`;
+      };
+      
       const periods = [
         {
           name: 'Hoje',
-          start: startOfDay(now).toISOString(),
-          end: endOfDay(now).toISOString()
+          start: formatDateWithFixedTime(startOfDay(now)),
+          end: formatDateWithFixedTime(endOfDay(now))
         },
         {
           name: 'Esta Semana',
-          start: startOfWeek(now, { locale: ptBR, weekStartsOn: 0 }).toISOString(),
-          end: endOfWeek(now, { locale: ptBR, weekStartsOn: 0 }).toISOString()
+          start: formatDateWithFixedTime(startOfWeek(now, { locale: ptBR, weekStartsOn: 0 })),
+          end: formatDateWithFixedTime(endOfWeek(now, { locale: ptBR, weekStartsOn: 0 }))
         },
         {
           name: 'Este Mês',
-          start: startOfMonth(now).toISOString(),
-          end: endOfMonth(now).toISOString()
+          start: formatDateWithFixedTime(startOfMonth(now)),
+          end: formatDateWithFixedTime(endOfMonth(now))
         },
         {
           name: 'Este Ano',
-          start: startOfYear(now).toISOString(),
-          end: endOfYear(now).toISOString()
+          start: formatDateWithFixedTime(startOfYear(now)),
+          end: formatDateWithFixedTime(endOfYear(now))
         },
         {
           name: 'Últimos 30 dias',
-          start: startOfDay(subDays(now, 30)).toISOString(),
-          end: endOfDay(now).toISOString()
+          start: formatDateWithFixedTime(startOfDay(subDays(now, 30))),
+          end: formatDateWithFixedTime(endOfDay(now))
         }
       ];
       
-      // Definir períodos para os últimos meses
+      // Definir períodos para os últimos meses com horário fixo
       const previousMonths = [];
       for (let i = 1; i <= 6; i++) {
         const monthDate = subMonths(now, i);
         previousMonths.push({
           name: format(monthDate, 'MMMM yyyy', { locale: ptBR }),
-          start: startOfMonth(monthDate).toISOString(),
-          end: endOfMonth(monthDate).toISOString()
+          start: formatDateWithFixedTime(startOfMonth(monthDate)),
+          end: formatDateWithFixedTime(endOfMonth(monthDate))
         });
       }
       
@@ -152,7 +162,7 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
       setSummaries(summaryData);
       setMonthlySummaries(monthlyData);
       
-      // Fetch data for currently selected month (defaults to current month)
+      // Fetch data for currently selected month
       fetchSelectedMonthData(selectedMonth);
     } catch (err) {
       console.error('Erro ao buscar dados financeiros:', err);
@@ -166,8 +176,13 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
   const fetchSelectedMonthData = async (date: Date) => {
     setIsLoading(true);
     try {
-      const start = startOfMonth(date).toISOString();
-      const end = endOfMonth(date).toISOString();
+      // Garantir que as datas de início e fim do mês usem o formato padronizado com hora 12:00
+      const startDate = startOfMonth(date);
+      const endDate = endOfMonth(date);
+      
+      // Construir strings ISO com horário fixo meio-dia para evitar problemas de fuso horário
+      const start = `${format(startDate, 'yyyy-MM-dd')}T12:00:00`;
+      const end = `${format(endDate, 'yyyy-MM-dd')}T12:00:00`;
       
       const { data, error } = await supabase
         .from('services')
@@ -178,12 +193,28 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
         
       if (error) throw error;
       
+      // Processar os dados para padronizar as datas com horário fixo
+      const processedData = data?.map(service => {
+        // Padronizar o formato da data para evitar problemas de fuso horário
+        let standardizedDate = service.service_date;
+        
+        // Se a data não tiver o horário fixado em 12:00, ajuste para o formato padronizado
+        if (standardizedDate && !standardizedDate.includes('T12:00:00')) {
+          standardizedDate = `${standardizedDate.split('T')[0]}T12:00:00`;
+        }
+
+        return {
+          ...service,
+          service_date: standardizedDate
+        };
+      }) || [];
+      
       // Calcular valores totais
-      const totalValue = data?.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
-      const averageValue = data && data.length > 0 ? totalValue / data.length : 0;
+      const totalValue = processedData.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
+      const averageValue = processedData.length > 0 ? totalValue / processedData.length : 0;
       
       setSelectedMonthData({
-        services: data || [],
+        services: processedData,
         totalValue,
         averageValue
       });
@@ -213,6 +244,13 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     if (previousTotal === 0) return 100; // Se o mês anterior foi zero, crescimento é de 100%
     
     return ((currentTotal - previousTotal) / previousTotal) * 100;
+  };
+
+  // Função auxiliar para formatar corretamente as datas sem problemas de fuso horário
+  const formatLocalDate = (dateString: string) => {
+    // Garantir que a data seja tratada como meio-dia UTC para evitar problemas de fuso horário
+    const date = new Date(`${dateString.split('T')[0]}T12:00:00Z`);
+    return format(date, 'dd/MM/yyyy', { locale: ptBR });
   };
 
   return (
@@ -268,7 +306,14 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
                     <select
                       id="month-select"
                       value={selectedMonth.toISOString()}
-                      onChange={(e) => setSelectedMonth(new Date(e.target.value))}
+                      onChange={(e) => {
+                        // Criar nova data a partir do valor selecionado, mas garantir que tenha horário meio-dia
+                        const dateString = e.target.value;
+                        const newDate = new Date(dateString);
+                        // Definir o horário para meio-dia para evitar problemas de fuso horário
+                        newDate.setHours(12, 0, 0, 0);
+                        setSelectedMonth(newDate);
+                      }}
                       className="select-enhanced"
                     >
                       {availableMonths.map((month) => (
@@ -314,7 +359,7 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
                           {selectedMonthData.services.map((service) => (
                             <tr key={service.id}>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                                {formatLocalDate(service.service_date)}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                                 {service.client_name}
@@ -340,7 +385,7 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
                             <div className="font-semibold text-blue-600">{formatCurrency(service.service_value)}</div>
                           </div>
                           <div className="text-sm text-gray-600 mt-1">
-                            {format(new Date(service.service_date), 'dd/MM/yyyy')}
+                            {formatLocalDate(service.service_date)}
                           </div>
                           <div className="text-sm text-gray-600">
                             {service.car_model} - {service.car_plate}
