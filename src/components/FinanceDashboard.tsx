@@ -13,34 +13,46 @@ interface FinanceDashboardProps {
   onClose: () => void;
 }
 
+interface SelectedMonthData {
+  services: any[];
+  totalValue: number;
+  averageValue: number;
+}
+
+/**
+ * Dashboard financeiro que exibe resumo de faturamento por períodos.
+ */
 export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [summaries, setSummaries] = useState<FinanceSummary[]>([]);
   const [monthlySummaries, setMonthlySummaries] = useState<FinanceSummary[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<Date>(() => new Date());
-  const [selectedMonthData, setSelectedMonthData] = useState<{
-    services: any[];
-    totalValue: number;
-    averageValue: number;
-  }>({ services: [], totalValue: 0, averageValue: 0 });
+  const [selectedMonthData, setSelectedMonthData] = useState<SelectedMonthData>({ 
+    services: [], 
+    totalValue: 0, 
+    averageValue: 0 
+  });
   const [availableMonths, setAvailableMonths] = useState<{value: Date, label: string}[]>([]);
   const [error, setError] = useState<string | null>(null);
   
+  // Inicializar dados ao carregar o componente
   useEffect(() => {
     fetchFinancialData();
     generateAvailableMonths();
   }, []);
   
+  // Buscar dados do mês selecionado quando ele mudar
   useEffect(() => {
     if (selectedMonth) {
       fetchSelectedMonthData(selectedMonth);
     }
   }, [selectedMonth]);
   
-  // Gerar os meses disponíveis para seleção (12 meses anteriores + mês atual)
+  /**
+   * Gera a lista de meses disponíveis para seleção (mês atual + 24 meses anteriores)
+   */
   const generateAvailableMonths = () => {
     const now = new Date();
-    // Definir meio-dia para evitar problemas de fuso horário
     now.setHours(12, 0, 0, 0);
     
     const months = [];
@@ -54,7 +66,6 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     // 24 meses anteriores
     for (let i = 1; i <= 24; i++) {
       const monthDate = subMonths(now, i);
-      // Garantir que cada data tenha horário meio-dia
       monthDate.setHours(12, 0, 0, 0);
       
       months.push({
@@ -66,6 +77,16 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     setAvailableMonths(months);
   };
 
+  /**
+   * Formata uma data para o formato padrão yyyy-MM-dd para consultas no banco
+   */
+  const formatDateForQuery = (date: Date) => {
+    return format(date, 'yyyy-MM-dd');
+  };
+
+  /**
+   * Busca todos os dados financeiros para preencher o dashboard
+   */
   const fetchFinancialData = async () => {
     setIsLoading(true);
     setError(null);
@@ -73,91 +94,51 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     try {
       const now = new Date();
       
-      // Definir os períodos de tempo para os dados atuais com horário fixo
-      const formatDateWithFixedTime = (date: Date) => {
-        return `${format(date, 'yyyy-MM-dd')}T12:00:00`;
-      };
-      
+      // Definir os períodos de tempo para os dados atuais 
       const periods = [
         {
           name: 'Hoje',
-          start: formatDateWithFixedTime(startOfDay(now)),
-          end: formatDateWithFixedTime(endOfDay(now))
+          start: formatDateForQuery(startOfDay(now)),
+          end: formatDateForQuery(endOfDay(now))
         },
         {
           name: 'Esta Semana',
-          start: formatDateWithFixedTime(startOfWeek(now, { locale: ptBR, weekStartsOn: 0 })),
-          end: formatDateWithFixedTime(endOfWeek(now, { locale: ptBR, weekStartsOn: 0 }))
+          start: formatDateForQuery(startOfWeek(now, { locale: ptBR, weekStartsOn: 0 })),
+          end: formatDateForQuery(endOfWeek(now, { locale: ptBR, weekStartsOn: 0 }))
         },
         {
           name: 'Este Mês',
-          start: formatDateWithFixedTime(startOfMonth(now)),
-          end: formatDateWithFixedTime(endOfMonth(now))
+          start: formatDateForQuery(startOfMonth(now)),
+          end: formatDateForQuery(endOfMonth(now))
         },
         {
           name: 'Este Ano',
-          start: formatDateWithFixedTime(startOfYear(now)),
-          end: formatDateWithFixedTime(endOfYear(now))
+          start: formatDateForQuery(startOfYear(now)),
+          end: formatDateForQuery(endOfYear(now))
         },
         {
           name: 'Últimos 30 dias',
-          start: formatDateWithFixedTime(startOfDay(subDays(now, 30))),
-          end: formatDateWithFixedTime(endOfDay(now))
+          start: formatDateForQuery(startOfDay(subDays(now, 30))),
+          end: formatDateForQuery(endOfDay(now))
         }
       ];
       
-      // Definir períodos para os últimos meses com horário fixo
+      // Definir períodos para os últimos meses
       const previousMonths = [];
       for (let i = 1; i <= 6; i++) {
         const monthDate = subMonths(now, i);
         previousMonths.push({
           name: format(monthDate, 'MMMM yyyy', { locale: ptBR }),
-          start: formatDateWithFixedTime(startOfMonth(monthDate)),
-          end: formatDateWithFixedTime(endOfMonth(monthDate))
+          start: formatDateForQuery(startOfMonth(monthDate)),
+          end: formatDateForQuery(endOfMonth(monthDate))
         });
       }
       
       // Buscar dados para os períodos atuais
-      const summaryData = await Promise.all(
-        periods.map(async (period) => {
-          const { data, error } = await supabase
-            .from('services')
-            .select('service_value')
-            .gte('service_date', period.start.split('T')[0])
-            .lte('service_date', period.end.split('T')[0]);
-            
-          if (error) throw new Error(`Erro ao buscar dados para ${period.name}: ${error.message}`);
-          
-          const total = data?.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
-          
-          return {
-            period: period.name,
-            total,
-            count: data?.length || 0
-          };
-        })
-      );
+      const summaryData = await fetchSummaryForPeriods(periods);
       
       // Buscar dados para os meses anteriores
-      const monthlyData = await Promise.all(
-        previousMonths.map(async (period) => {
-          const { data, error } = await supabase
-            .from('services')
-            .select('service_value')
-            .gte('service_date', period.start.split('T')[0])
-            .lte('service_date', period.end.split('T')[0]);
-            
-          if (error) throw new Error(`Erro ao buscar dados para ${period.name}: ${error.message}`);
-          
-          const total = data?.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
-          
-          return {
-            period: period.name,
-            total,
-            count: data?.length || 0
-          };
-        })
-      );
+      const monthlyData = await fetchSummaryForPeriods(previousMonths);
       
       setSummaries(summaryData);
       setMonthlySummaries(monthlyData);
@@ -171,50 +152,59 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
       setIsLoading(false);
     }
   };
+
+  /**
+   * Busca resumo financeiro para um array de períodos
+   */
+  const fetchSummaryForPeriods = async (periods: { name: string, start: string, end: string }[]) => {
+    return Promise.all(
+      periods.map(async (period) => {
+        const { data, error } = await supabase
+          .from('services')
+          .select('service_value')
+          .gte('service_date', period.start)
+          .lte('service_date', period.end);
+          
+        if (error) throw new Error(`Erro ao buscar dados para ${period.name}: ${error.message}`);
+        
+        const total = data?.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
+        
+        return {
+          period: period.name,
+          total,
+          count: data?.length || 0
+        };
+      })
+    );
+  };
   
-  // Buscar dados detalhados para o mês selecionado
+  /**
+   * Busca dados detalhados para o mês selecionado
+   */
   const fetchSelectedMonthData = async (date: Date) => {
     setIsLoading(true);
     try {
-      // Garantir que as datas de início e fim do mês usem o formato padronizado com hora 12:00
       const startDate = startOfMonth(date);
       const endDate = endOfMonth(date);
       
-      // Construir strings ISO com horário fixo meio-dia para evitar problemas de fuso horário
-      const start = `${format(startDate, 'yyyy-MM-dd')}T12:00:00`;
-      const end = `${format(endDate, 'yyyy-MM-dd')}T12:00:00`;
+      const start = formatDateForQuery(startDate);
+      const end = formatDateForQuery(endDate);
       
       const { data, error } = await supabase
         .from('services')
         .select('*')
-        .gte('service_date', start.split('T')[0])
-        .lte('service_date', end.split('T')[0])
+        .gte('service_date', start)
+        .lte('service_date', end)
         .order('service_date', { ascending: false });
         
       if (error) throw error;
       
-      // Processar os dados para padronizar as datas com horário fixo
-      const processedData = data?.map(service => {
-        // Padronizar o formato da data para evitar problemas de fuso horário
-        let standardizedDate = service.service_date;
-        
-        // Se a data não tiver o horário fixado em 12:00, ajuste para o formato padronizado
-        if (standardizedDate && !standardizedDate.includes('T12:00:00')) {
-          standardizedDate = `${standardizedDate.split('T')[0]}T12:00:00`;
-        }
-
-        return {
-          ...service,
-          service_date: standardizedDate
-        };
-      }) || [];
-      
       // Calcular valores totais
-      const totalValue = processedData.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
-      const averageValue = processedData.length > 0 ? totalValue / processedData.length : 0;
+      const totalValue = data?.reduce((sum, service) => sum + (parseFloat(service.service_value) || 0), 0) || 0;
+      const averageValue = data?.length ? totalValue / data.length : 0;
       
       setSelectedMonthData({
-        services: processedData,
+        services: data || [],
         totalValue,
         averageValue
       });
@@ -226,7 +216,9 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     }
   };
   
-  // Formatar valor como moeda brasileira
+  /**
+   * Formata valor como moeda brasileira
+   */
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -234,7 +226,9 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     }).format(value);
   };
 
-  // Função para calcular o crescimento em relação ao mês anterior
+  /**
+   * Calcula o crescimento percentual em relação ao mês anterior
+   */
   const calculateGrowth = (index: number) => {
     if (index >= monthlySummaries.length - 1) return 0;
     
@@ -246,11 +240,17 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
     return ((currentTotal - previousTotal) / previousTotal) * 100;
   };
 
-  // Função auxiliar para formatar corretamente as datas sem problemas de fuso horário
+  /**
+   * Formata a data para exibição no formato local (dd/MM/yyyy)
+   */
   const formatLocalDate = (dateString: string) => {
-    // Garantir que a data seja tratada como meio-dia UTC para evitar problemas de fuso horário
-    const date = new Date(`${dateString.split('T')[0]}T12:00:00Z`);
-    return format(date, 'dd/MM/yyyy', { locale: ptBR });
+    try {
+      const datePart = dateString.split('T')[0];
+      const date = new Date(`${datePart}T12:00:00Z`);
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
+    } catch (e) {
+      return dateString;
+    }
   };
 
   return (
@@ -307,10 +307,8 @@ export function FinanceDashboard({ onClose }: FinanceDashboardProps) {
                       id="month-select"
                       value={selectedMonth.toISOString()}
                       onChange={(e) => {
-                        // Criar nova data a partir do valor selecionado, mas garantir que tenha horário meio-dia
                         const dateString = e.target.value;
                         const newDate = new Date(dateString);
-                        // Definir o horário para meio-dia para evitar problemas de fuso horário
                         newDate.setHours(12, 0, 0, 0);
                         setSelectedMonth(newDate);
                       }}

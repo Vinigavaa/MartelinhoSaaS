@@ -10,17 +10,26 @@ interface ServiceFormProps {
   onCancel: () => void;
 }
 
+/**
+ * Formulário para cadastro e edição de serviços
+ */
 export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) {
+  // Estado inicial do formulário
   const [formData, setFormData] = useState({
     client_name: service?.client_name || '',
-    service_date: service?.service_date ? format(new Date(service.service_date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+    service_date: service?.service_date 
+      ? format(new Date(service.service_date), 'yyyy-MM-dd') 
+      : format(new Date(), 'yyyy-MM-dd'),
     car_plate: service?.car_plate || '',
     car_model: service?.car_model || '',
     service_value: service?.service_value || '',
     repaired_parts: service?.repaired_parts || [REPAIRED_PARTS[0]]
   });
 
-  // Função para lidar com a seleção de múltiplas peças
+  /**
+   * Função para gerenciar a seleção de múltiplas peças reparadas
+   * Adiciona a peça se não estiver selecionada, ou remove se já estiver
+   */
   const handleRepairedPartsChange = (part: string) => {
     setFormData((prevData) => {
       const currentParts = [...prevData.repaired_parts];
@@ -41,6 +50,9 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
     });
   };
 
+  /**
+   * Salva o serviço no banco de dados (cria novo ou atualiza existente)
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -51,73 +63,74 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
     }
 
     try {
-      console.log('Enviando dados para o Supabase:', formData);
-      
-      // Garantir que a data seja preservada corretamente sem problema de fuso horário
-      // Adiciona a hora 12:00 para evitar qualquer problema de conversão de timezone
-      const fixedDate = formData.service_date ? 
-        `${formData.service_date}T12:00:00` : 
-        new Date().toISOString().split('T')[0] + 'T12:00:00';
+      // Garantir que a data esteja no formato correto (yyyy-MM-dd)
+      const formattedDate = formData.service_date || format(new Date(), 'yyyy-MM-dd');
       
       if (service?.id) {
-        const { error } = await supabase
-          .from('services')
-          .update({
-            ...formData,
-            // Substituir a data pelo valor corrigido com horário fixo
-            service_date: fixedDate,
-            // Adicionar também o primeiro item para a coluna antiga (para compatibilidade)
-            repaired_part: formData.repaired_parts[0] || null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', service.id);
-        
-        if (error) {
-          console.error('Erro detalhado ao atualizar:', error);
-          throw error;
-        }
-        toast.success('Serviço atualizado com sucesso!');
+        // Atualizar serviço existente
+        await updateExistingService(service.id, formattedDate);
       } else {
-        // Dados para enviar
-        const dataToSend = {
-          ...formData,
-          // Substituir a data pelo valor corrigido com horário fixo
-          service_date: fixedDate,
-          // Garantir que o valor do serviço seja um número
-          service_value: typeof formData.service_value === 'string' 
-            ? parseFloat(formData.service_value) 
-            : formData.service_value,
-          // Adicionar também o primeiro item para a coluna antiga (para compatibilidade)
-          repaired_part: formData.repaired_parts[0] || null,
-          // Adicionar created_at e updated_at
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        console.log('Dados formatados para envio:', dataToSend);
-        
-        const { data, error } = await supabase
-          .from('services')
-          .insert([dataToSend])
-          .select();
-        
-        if (error) {
-          console.error('Erro detalhado ao inserir:', error);
-          throw error;
-        }
-        
-        console.log('Resposta da inserção:', data);
-        toast.success('Serviço cadastrado com sucesso!');
+        // Criar novo serviço
+        await createNewService(formattedDate);
       }
+      
       onSuccess();
     } catch (error) {
-      console.error('Erro completo:', error);
       toast.error('Erro ao salvar o serviço');
     }
   };
 
+  /**
+   * Atualiza um serviço existente
+   */
+  const updateExistingService = async (serviceId: string, formattedDate: string) => {
+    const { error } = await supabase
+      .from('services')
+      .update({
+        ...formData,
+        service_date: formattedDate,
+        repaired_part: formData.repaired_parts[0] || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', serviceId);
+    
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Serviço atualizado com sucesso!');
+  };
+
+  /**
+   * Cria um novo serviço
+   */
+  const createNewService = async (formattedDate: string) => {
+    const dataToSend = {
+      ...formData,
+      service_date: formattedDate,
+      service_value: typeof formData.service_value === 'string' 
+        ? parseFloat(formData.service_value) 
+        : formData.service_value,
+      repaired_part: formData.repaired_parts[0] || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    const { error } = await supabase
+      .from('services')
+      .insert([dataToSend])
+      .select();
+    
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Serviço cadastrado com sucesso!');
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      {/* Nome do Cliente */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente</label>
         <input
@@ -129,6 +142,7 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
         />
       </div>
 
+      {/* Data e Valor do Serviço */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Data do Serviço</label>
@@ -155,6 +169,7 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
         </div>
       </div>
 
+      {/* Dados do Veículo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Placa do Carro</label>
@@ -179,6 +194,7 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
         </div>
       </div>
 
+      {/* Peças Reparadas */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Peças Reparadas (selecione uma ou mais)</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
@@ -199,6 +215,7 @@ export function ServiceForm({ service, onSuccess, onCancel }: ServiceFormProps) 
         </div>
       </div>
 
+      {/* Botões de Ação */}
       <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
         <button
           type="button"
