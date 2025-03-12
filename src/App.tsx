@@ -10,7 +10,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { generateAndDownloadPDF } from './lib/generateInvoicePDF';
 
 const formatLocalDate = (dateString: string) => {
-  // Garantir que a data seja tratada como meio-dia UTC para evitar problemas de fuso horário
+  // Garantir que a data seja tratada como meio-dia UTC para evitar problemas de fuso horárioooo
   const date = new Date(`${dateString.split('T')[0]}T12:00:00Z`);
   return format(date, 'dd/MM/yyyy', { locale: pt });
 };
