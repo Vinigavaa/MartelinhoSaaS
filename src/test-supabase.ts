@@ -1,6 +1,6 @@
 // Script para testar a conexão com o Supabase
 import { createClient } from '@supabase/supabase-js';
-
+//ola
 const supabaseUrl = 'https://bunkfbfqnbyuwuhhligv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1bmtmYmZxbmJ5dXd1aGhsaWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2NDU0ODYsImV4cCI6MjA1NzIyMTQ4Nn0.I4HRxc5KIcK-lIcSix_gucRRdnSPxg1Pe-n1TbrDnlo';
 
