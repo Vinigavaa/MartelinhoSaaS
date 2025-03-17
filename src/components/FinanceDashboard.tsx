@@ -4,6 +4,7 @@ import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, end
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '../contexts/AuthContext';
 import { X } from 'lucide-react';
+import { formatCurrency, formatLocalDate } from '../utils/formatters';
 
 interface FinanceSummary {
   period: string;
@@ -227,16 +228,6 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
       setIsLoading(false);
     }
   };
-  
-  /**
-   * Formata valor como moeda brasileira
-   */
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
 
   /**
    * Calcula o crescimento percentual em relação ao mês anterior
@@ -250,19 +241,6 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
     if (previousTotal === 0) return 100; // Se o mês anterior foi zero, crescimento é de 100%
     
     return ((currentTotal - previousTotal) / previousTotal) * 100;
-  };
-
-  /**
-   * Formata a data para exibição no formato local (dd/MM/yyyy)
-   */
-  const formatLocalDate = (dateString: string) => {
-    try {
-      const datePart = dateString.split('T')[0];
-      const date = new Date(`${datePart}T12:00:00Z`);
-      return format(date, 'dd/MM/yyyy', { locale: ptBR });
-    } catch (e) {
-      return 'Data inválida';
-    }
   };
   
   if (!isOpen) return null;
