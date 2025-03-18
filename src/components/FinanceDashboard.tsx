@@ -274,16 +274,32 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Resumo por período</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                  {summaries.map((summary, index) => (
-                    <div 
-                      key={index} 
-                      className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <h4 className="text-sm font-medium text-gray-500">{summary.period}</h4>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(summary.total)}</p>
-                      <p className="text-sm text-gray-500 mt-1">{summary.count} serviços</p>
-                    </div>
-                  ))}
+                  {summaries.map((summary, index) => {
+                    // Definir cores diferentes para cada card de resumo
+                    const cardColors = [
+                      { bg: "bg-gradient-to-br from-blue-50 to-blue-100", text: "text-blue-700", border: "border-blue-200", hover: "hover:shadow-blue-100" },
+                      { bg: "bg-gradient-to-br from-emerald-50 to-emerald-100", text: "text-emerald-700", border: "border-emerald-200", hover: "hover:shadow-emerald-100" },
+                      { bg: "bg-gradient-to-br from-purple-50 to-purple-100", text: "text-purple-700", border: "border-purple-200", hover: "hover:shadow-purple-100" },
+                      { bg: "bg-gradient-to-br from-amber-50 to-amber-100", text: "text-amber-700", border: "border-amber-200", hover: "hover:shadow-amber-100" },
+                      { bg: "bg-gradient-to-br from-rose-50 to-rose-100", text: "text-rose-700", border: "border-rose-200", hover: "hover:shadow-rose-100" }
+                    ];
+                    const colorScheme = cardColors[index % cardColors.length];
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className={`${colorScheme.bg} p-4 rounded-lg border ${colorScheme.border} shadow-sm ${colorScheme.hover} hover:shadow-md transition-all duration-300`}
+                      >
+                        <h4 className="text-sm font-medium text-gray-500">{summary.period}</h4>
+                        <p className={`text-2xl font-bold ${colorScheme.text} mt-1`}>{formatCurrency(summary.total)}</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colorScheme.bg} ${colorScheme.text}`}>
+                            {summary.count} serviços
+                          </span>
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               
@@ -291,9 +307,9 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Faturamento mensal histórico</h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                  <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
                     <thead>
-                      <tr className="bg-gray-50">
+                      <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mês</th>
                         <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faturamento</th>
                         <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Serviços</th>
@@ -302,25 +318,37 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {monthlySummaries.map((summary, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="py-3 px-4 text-sm font-medium text-gray-900">{summary.period}</td>
-                          <td className="py-3 px-4 text-sm text-gray-500">{formatCurrency(summary.total)}</td>
-                          <td className="py-3 px-4 text-sm text-gray-500">{summary.count}</td>
-                          <td className="py-3 px-4 text-sm text-gray-500">
-                            {summary.count > 0 ? formatCurrency(summary.total / summary.count) : formatCurrency(0)}
-                          </td>
-                          <td className="py-3 px-4">
-                            {index < monthlySummaries.length - 1 && (
-                              <div className={`flex items-center ${calculateGrowth(index) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                <span className="text-sm font-medium">
-                                  {calculateGrowth(index) >= 0 ? '+' : ''}{calculateGrowth(index).toFixed(1)}%
-                                </span>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
+                      {monthlySummaries.map((summary, index) => {
+                        const growth = calculateGrowth(index);
+                        const growthColorClass = growth > 5 ? 'text-emerald-600 bg-emerald-50' : 
+                                                growth > 0 ? 'text-green-600 bg-green-50' :
+                                                growth < -5 ? 'text-red-600 bg-red-50' :
+                                                growth < 0 ? 'text-orange-600 bg-orange-50' :
+                                                'text-gray-600 bg-gray-50';
+                        
+                        // Alternar cores de fundo para linhas da tabela
+                        const rowClass = index % 2 === 0 ? 'hover:bg-blue-50' : 'bg-gray-50 hover:bg-blue-50';
+                        
+                        return (
+                          <tr key={index} className={`transition-colors duration-150 ${rowClass}`}>
+                            <td className="py-3 px-4 text-sm font-medium text-gray-900">{summary.period}</td>
+                            <td className="py-3 px-4 text-sm font-medium text-blue-600">{formatCurrency(summary.total)}</td>
+                            <td className="py-3 px-4 text-sm text-gray-500">{summary.count}</td>
+                            <td className="py-3 px-4 text-sm font-medium text-purple-600">
+                              {summary.count > 0 ? formatCurrency(summary.total / summary.count) : formatCurrency(0)}
+                            </td>
+                            <td className="py-3 px-4">
+                              {index < monthlySummaries.length - 1 && (
+                                <div className={`flex items-center`}>
+                                  <span className={`text-sm font-medium px-2 py-1 rounded-full ${growthColorClass}`}>
+                                    {growth >= 0 ? '+' : ''}{growth.toFixed(1)}%
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -331,7 +359,7 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Detalhes por mês</h3>
                   <select 
-                    className="mt-2 sm:mt-0 block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-2 sm:mt-0 block w-full sm:w-auto px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gradient-to-r from-indigo-50 to-blue-50"
                     value={availableMonths.findIndex(month => 
                       month.value.getMonth() === selectedMonth.getMonth() && 
                       month.value.getFullYear() === selectedMonth.getFullYear()
@@ -350,17 +378,17 @@ export function FinanceDashboard({ onClose, isOpen }: FinanceDashboardProps) {
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
                     <h4 className="text-sm font-medium text-gray-500">Faturamento total</h4>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(selectedMonthData.totalValue)}</p>
+                    <p className="text-2xl font-bold text-blue-700 mt-1">{formatCurrency(selectedMonthData.totalValue)}</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200 shadow-sm hover:shadow-md transition-all duration-300">
                     <h4 className="text-sm font-medium text-gray-500">Total de serviços</h4>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{selectedMonthData.services.length}</p>
+                    <p className="text-2xl font-bold text-emerald-700 mt-1">{selectedMonthData.services.length}</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-all duration-300">
                     <h4 className="text-sm font-medium text-gray-500">Ticket médio</h4>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(selectedMonthData.averageValue)}</p>
+                    <p className="text-2xl font-bold text-purple-700 mt-1">{formatCurrency(selectedMonthData.averageValue)}</p>
                   </div>
                 </div>
                 
