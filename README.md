@@ -102,16 +102,4 @@ O dashboard oferece insights sobre o desempenho financeiro:
 - Detalhamento de serviços por mês selecionado
 - Métricas de faturamento, total de serviços e ticket médio
 
-## Contribuição
-
-Para contribuir com o projeto:
-
-1. Faça um fork do repositório
-2. Crie um branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para o branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
-
-## Licença
-
 Este projeto está licenciado sob a licença MIT. 
