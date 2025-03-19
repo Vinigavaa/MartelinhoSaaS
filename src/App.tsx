@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Pencil, Trash2, Plus, Search, PieChart, FileText, LogOut, User } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search, PieChart, FileText, LogOut, User, Filter } from 'lucide-react';
 import { ServiceForm } from './components/ServiceForm';
 import { FinanceDashboard } from './components/FinanceDashboard';
 import { Service } from './types';
@@ -9,6 +9,7 @@ import { supabase } from './lib/supabase';
 import toast, { Toaster } from 'react-hot-toast';
 import { generateAndDownloadPDF } from './lib/generateInvoicePDF';
 import { AuthPage } from './pages/AuthPage';
+import { AdvancedSearchPage } from './pages/AdvancedSearchPage';
 import { useAuth } from './contexts/AuthContext';
 
 const formatLocalDate = (dateString: string) => {
@@ -23,6 +24,7 @@ function App() {
   const [filteredServices, setFilteredServices] = useState<Service[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -100,7 +102,10 @@ function App() {
       });
       
       setServices(processedData || []);
-      setFilteredServices(processedData || []);
+      
+      // Mostrar apenas os 10 serviços mais recentes quando não há busca
+      const recentServices = processedData ? [...processedData].slice(0, 10) : [];
+      setFilteredServices(recentServices);
     } catch (error) {
       console.error('Erro ao buscar serviços:', error);
       toast.error('Erro ao carregar os serviços');
@@ -112,15 +117,16 @@ function App() {
     setSearchTerm(term);
     
     if (!term.trim()) {
-      // Se o termo de busca estiver vazio, mostrar todos os serviços
-      setFilteredServices(services);
+      // Se o termo de busca estiver vazio, mostrar apenas os 10 serviços mais recentes
+      const recentServices = services.slice(0, 10);
+      setFilteredServices(recentServices);
       return;
     }
     
     // Converter para minúsculas para comparação case-insensitive
     const termLower = term.toLowerCase();
     
-    // Filtrar os serviços que contêm o termo no nome do cliente ou na placa
+    // Filtrar todos os serviços que contêm o termo no nome do cliente ou na placa
     const filtered = services.filter(service => 
       service.client_name.toLowerCase().includes(termLower) || 
       service.car_plate.toLowerCase().includes(termLower)
@@ -169,6 +175,29 @@ function App() {
     setIsFormOpen(false);
     setEditingService(undefined);
     fetchServices();
+  };
+
+  const handleAdvancedSearchSuccess = () => {
+    console.log('Fechando busca avançada');
+    setIsAdvancedSearchOpen(false);
+    
+    // Verificar se há um serviço para edição no localStorage
+    const editingServiceJson = localStorage.getItem('editingService');
+    if (editingServiceJson) {
+      try {
+        const service = JSON.parse(editingServiceJson);
+        setEditingService(service);
+        setIsFormOpen(true);
+        localStorage.removeItem('editingService');
+      } catch (error) {
+        console.error('Erro ao processar serviço para edição:', error);
+      }
+    }
+    
+    // Recarregar os serviços para atualizar a lista
+    setTimeout(() => {
+      fetchServices();
+    }, 100);
   };
 
   const handleLogout = async () => {
@@ -263,6 +292,28 @@ function App() {
     return <AuthPage />;
   }
 
+  // Quando a busca avançada está ativa, renderizar apenas esse componente
+  if (isAdvancedSearchOpen) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Toaster position="top-right" />
+        <AdvancedSearchPage onBack={handleAdvancedSearchSuccess} />
+        
+        {/* Modals que podem ser mostrados mesmo durante a busca avançada */}
+        {isFormOpen && (
+          <ServiceForm
+            isOpen={isFormOpen}
+            onClose={() => { setIsFormOpen(false); setEditingService(undefined); }}
+            onSuccess={handleFormSuccess}
+            service={editingService}
+            tenant_id={user.id}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Interface principal padrão
   return (
     <div className="min-h-screen bg-gray-100">
       <Toaster position="top-right" />
@@ -296,7 +347,6 @@ function App() {
         </div>
       </header>
       
-      {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Toolbar */}
         <div className="bg-white shadow rounded-lg mb-6 p-4">
@@ -317,6 +367,17 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-2">
+              <button
+                onClick={() => {
+                  console.log('Abrindo busca avançada');
+                  setIsAdvancedSearchOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Busca Avançada
+              </button>
+              
               <button
                 onClick={() => setIsDashboardOpen(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
