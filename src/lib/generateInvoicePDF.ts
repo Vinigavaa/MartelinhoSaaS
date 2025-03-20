@@ -114,209 +114,432 @@ export async function generatePDFBlob(service: Service): Promise<Blob> {
  * Função auxiliar para criar a definição do documento
  */
 function createDocDefinition(service: Service): TDocumentDefinitions {
+  // Criar um ID de documento para rastreabilidade
+  const documentId = service.auth_code || `AC${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  
+  // Formatar a data do serviço de forma mais elegante
+  const serviceDateFormatted = service.service_date
+    ? format(new Date(service.service_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    : format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  
+  // Definir cores para o tema do documento - versão minimalista e profissional
+  const colors = {
+    primary: '#1F2937',     // Cinza escuro para títulos e cabeçalho
+    secondary: '#4B5563',   // Cinza médio 
+    accent: '#6B7280',      // Cinza para elementos menos importantes
+    text: '#111827',        // Cinza muito escuro para texto principal
+    textLight: '#6B7280',   // Cinza médio para texto secundário
+    bgLight: '#F9FAFB',     // Cinza muito claro para fundos
+    bgMedium: '#F3F4F6',    // Cinza claro para cabeçalhos de tabelas
+    borderColor: '#E5E7EB', // Cinza claro para bordas
+  };
+  
   return {
     pageSize: 'A4',
-    pageMargins: [40, 60, 40, 60],
+    pageMargins: [40, 80, 40, 40] as [number, number, number, number],
     
+    // Cabeçalho mais simples e profissional
     header: {
+      margin: [40, 20, 40, 0] as [number, number, number, number],
       columns: [
         {
-          text: '',
-          width: 30,
-          margin: [40, 20, 0, 0]
+          text: 'MARTELINHO DE OURO',
+          bold: true,
+          fontSize: 16,
+          color: colors.primary
         },
         {
-          text: 'MARTELINHO DE OURO',
-          alignment: 'center',
-          margin: [0, 20, 0, 0],
-          fontSize: 16,
-          bold: true,
-          color: '#2563EB'
-        },
-        { width: 30, text: '' }
+          text: 'NOTA FISCAL',
+          alignment: 'right',
+          fontSize: 14,
+          color: colors.primary
+        }
       ]
     },
     
+    // Rodapé com informações da empresa
+    footer: {
+      margin: [40, 0, 40, 0] as [number, number, number, number],
+      columns: [
+        {
+          text: 'Martelinho de Ouro Ltda.',
+          fontSize: 8,
+          color: colors.textLight
+        },
+        {
+          text: documentId,
+          fontSize: 8,
+          color: colors.textLight,
+          alignment: 'right'
+        }
+      ]
+    },
+    
+    // Conteúdo principal do documento
     content: [
-      {
-        text: 'NOTA FISCAL DE SERVIÇO',
-        alignment: 'center',
-        fontSize: 14,
-        bold: true,
-        margin: [0, 20, 0, 30]
-      },
+      // Seção de detalhes da nota
       {
         columns: [
           {
-            width: '50%',
-            text: [
-              { text: 'Código de Autenticação: ', bold: true },
-              { text: service.auth_code || 'N/A' }
+            width: '60%',
+            stack: [
+              {
+                text: 'Nota Fiscal de Serviço',
+                fontSize: 16,
+                color: colors.primary,
+                bold: true,
+                margin: [0, 10, 0, 5] as [number, number, number, number]
+              },
+              {
+                text: `Emitido em: ${serviceDateFormatted}`,
+                fontSize: 10,
+                color: colors.textLight,
+                margin: [0, 0, 0, 10] as [number, number, number, number]
+              }
             ]
           },
           {
-            width: '50%',
-            text: [
-              { text: 'Data: ', bold: true },
-              { text: service.service_date 
-                ? format(new Date(service.service_date), 'dd/MM/yyyy') 
-                : format(new Date(), 'dd/MM/yyyy') 
+            width: '40%',
+            stack: [
+              {
+                qr: documentId,
+                fit: 80,
+                foreground: colors.primary,
+                margin: [0, 10, 0, 10] as [number, number, number, number]
               }
             ],
             alignment: 'right'
           }
-        ],
-        margin: [0, 0, 0, 15]
+        ]
       },
+      
+      // Status do serviço
       {
-        text: 'DADOS DO CLIENTE',
+        text: 'SERVIÇO CONCLUÍDO',
+        alignment: 'center',
+        fontSize: 12,
         bold: true,
-        fontSize: 11,
-        margin: [0, 10, 0, 5],
-        color: '#2563EB'
+        color: colors.primary,
+        margin: [0, 10, 0, 20] as [number, number, number, number]
       },
-      {
-        style: 'tableExample',
-        table: {
-          widths: ['*'],
-          body: [
-            [
-              {
-                stack: [
-                  { text: [{ text: 'Nome: ', bold: true }, service.client_name] },
-                  { text: [{ text: 'Telefone: ', bold: true }, 'Não informado'] }
-                ],
-                margin: [5, 5, 5, 5]
-              }
-            ]
-          ]
-        },
-        layout: {
-          hLineWidth: function() { return 1; },
-          vLineWidth: function() { return 1; },
-          hLineColor: function() { return '#EAEAEA'; },
-          vLineColor: function() { return '#EAEAEA'; },
-        }
-      },
-      {
-        text: 'DADOS DO VEÍCULO',
-        bold: true,
-        fontSize: 11,
-        margin: [0, 15, 0, 5],
-        color: '#2563EB'
-      },
-      {
-        style: 'tableExample',
-        table: {
-          widths: ['*'],
-          body: [
-            [
-              {
-                stack: [
-                  { text: [{ text: 'Modelo: ', bold: true }, service.car_model] },
-                  { text: [{ text: 'Placa: ', bold: true }, service.car_plate] }
-                ],
-                margin: [5, 5, 5, 5]
-              }
-            ]
-          ]
-        },
-        layout: {
-          hLineWidth: function() { return 1; },
-          vLineWidth: function() { return 1; },
-          hLineColor: function() { return '#EAEAEA'; },
-          vLineColor: function() { return '#EAEAEA'; },
-        }
-      },
-      {
-        text: 'SERVIÇOS REALIZADOS',
-        bold: true,
-        fontSize: 11,
-        margin: [0, 15, 0, 5],
-        color: '#2563EB'
-      },
-      {
-        style: 'tableExample',
-        table: {
-          headerRows: 1,
-          widths: ['8%', '*', '25%'],
-          body: [
-            [
-              { text: 'Item', style: 'tableHeader', alignment: 'center' },
-              { text: 'Descrição', style: 'tableHeader', alignment: 'center' },
-              { text: 'Valor', style: 'tableHeader', alignment: 'center' }
-            ],
-            [
-              { text: '1', alignment: 'center' },
-              { text: 'Serviço de Funilaria e Pintura', alignment: 'left' },
-              { text: formatCurrency(service.service_value), alignment: 'right' }
-            ]
-          ]
-        },
-        layout: {
-          hLineWidth: function() { return 1; },
-          vLineWidth: function() { return 1; },
-          hLineColor: function() { return '#EAEAEA'; },
-          vLineColor: function() { return '#EAEAEA'; },
-          fillColor: function(i) { return (i === 0) ? '#F3F4F6' : null; }
-        }
-      },
+      
+      // Informações do cliente e veículo em tabelas lado a lado
       {
         columns: [
-          { width: '*', text: '' },
+          // Coluna do cliente
           {
-            width: 'auto',
+            width: '48%',
+            stack: [
+              {
+                text: 'DADOS DO CLIENTE',
+                bold: true,
+                fontSize: 11,
+                color: colors.primary,
+                margin: [0, 0, 0, 5] as [number, number, number, number]
+              },
+              {
+                table: {
+                  headerRows: 0,
+                  widths: ['*'],
+                  body: [
+                    [
+                      {
+                        stack: [
+                          {
+                            text: service.client_name,
+                            fontSize: 10,
+                            bold: true,
+                            margin: [0, 5, 0, 5] as [number, number, number, number]
+                          },
+                          {
+                            text: 'Telefone: Não informado',
+                            fontSize: 9,
+                            margin: [0, 0, 0, 5] as [number, number, number, number]
+                          }
+                        ],
+                        margin: [5, 0, 5, 0] as [number, number, number, number]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  hLineWidth: function() { return 0.5; },
+                  vLineWidth: function() { return 0.5; },
+                  hLineColor: function() { return colors.borderColor; },
+                  vLineColor: function() { return colors.borderColor; }
+                }
+              }
+            ],
+            margin: [0, 0, 5, 0] as [number, number, number, number]
+          },
+          
+          // Coluna do veículo
+          {
+            width: '48%',
+            stack: [
+              {
+                text: 'DADOS DO VEÍCULO',
+                bold: true,
+                fontSize: 11,
+                color: colors.primary,
+                margin: [0, 0, 0, 5] as [number, number, number, number]
+              },
+              {
+                table: {
+                  headerRows: 0,
+                  widths: ['*'],
+                  body: [
+                    [
+                      {
+                        stack: [
+                          {
+                            text: service.car_model,
+                            fontSize: 10,
+                            bold: true,
+                            margin: [0, 5, 0, 5] as [number, number, number, number]
+                          },
+                          {
+                            text: `Placa: ${service.car_plate}`,
+                            fontSize: 9,
+                            margin: [0, 0, 0, 5] as [number, number, number, number]
+                          }
+                        ],
+                        margin: [5, 0, 5, 0] as [number, number, number, number]
+                      }
+                    ]
+                  ]
+                },
+                layout: {
+                  hLineWidth: function() { return 0.5; },
+                  vLineWidth: function() { return 0.5; },
+                  hLineColor: function() { return colors.borderColor; },
+                  vLineColor: function() { return colors.borderColor; }
+                }
+              }
+            ],
+            margin: [0, 0, 0, 0] as [number, number, number, number]
+          }
+        ],
+        margin: [0, 0, 0, 20] as [number, number, number, number]
+      },
+      
+      // Detalhes do serviço
+      {
+        stack: [
+          {
+            text: 'DETALHES DO SERVIÇO',
+            bold: true,
+            fontSize: 11,
+            color: colors.primary,
+            margin: [0, 0, 0, 5] as [number, number, number, number]
+          },
+          {
             table: {
+              headerRows: 1,
+              widths: ['8%', '*', '25%'],
               body: [
                 [
-                  { text: 'TOTAL:', bold: true, alignment: 'right', margin: [0, 5, 0, 0] },
+                  { 
+                    text: 'ITEM', 
+                    fontSize: 9,
+                    bold: true,
+                    fillColor: colors.bgMedium,
+                    color: colors.primary,
+                    alignment: 'center',
+                    margin: [0, 5, 0, 5] as [number, number, number, number]
+                  },
+                  { 
+                    text: 'DESCRIÇÃO', 
+                    fontSize: 9,
+                    bold: true,
+                    fillColor: colors.bgMedium,
+                    color: colors.primary,
+                    alignment: 'left',
+                    margin: [0, 5, 0, 5] as [number, number, number, number]
+                  },
+                  { 
+                    text: 'VALOR', 
+                    fontSize: 9,
+                    bold: true,
+                    fillColor: colors.bgMedium,
+                    color: colors.primary,
+                    alignment: 'right',
+                    margin: [0, 5, 0, 5] as [number, number, number, number]
+                  }
+                ],
+                [
+                  { 
+                    text: '1', 
+                    alignment: 'center',
+                    fontSize: 9,
+                    margin: [0, 5, 0, 5] as [number, number, number, number]
+                  },
+                  { 
+                    text: 'Serviço de Funilaria e Pintura', 
+                    fontSize: 9,
+                    margin: [0, 5, 0, 5] as [number, number, number, number]
+                  },
                   { 
                     text: formatCurrency(service.service_value), 
-                    bold: true, 
                     alignment: 'right',
-                    fontSize: 12,
-                    color: '#2563EB',
-                    margin: [5, 5, 0, 0] 
+                    fontSize: 9,
+                    margin: [0, 5, 0, 5] as [number, number, number, number]
                   }
                 ]
               ]
             },
-            layout: 'noBorders',
-            margin: [0, 10, 0, 0]
+            layout: {
+              hLineWidth: function() { return 0.5; },
+              vLineWidth: function() { return 0.5; },
+              hLineColor: function() { return colors.borderColor; },
+              vLineColor: function() { return colors.borderColor; },
+            }
+          },
+          // Total
+          {
+            columns: [
+              { width: '*', text: '' },
+              {
+                width: 'auto',
+                table: {
+                  body: [
+                    [
+                      { 
+                        text: 'TOTAL:', 
+                        bold: true, 
+                        alignment: 'right',
+                        fontSize: 10,
+                        color: colors.primary,
+                        margin: [0, 5, 5, 5] as [number, number, number, number]
+                      },
+                      { 
+                        text: formatCurrency(service.service_value), 
+                        bold: true, 
+                        alignment: 'right',
+                        fontSize: 12,
+                        color: colors.primary,
+                        margin: [0, 5, 0, 5] as [number, number, number, number]
+                      }
+                    ]
+                  ]
+                },
+                layout: 'noBorders',
+                margin: [0, 10, 0, 0] as [number, number, number, number]
+              }
+            ]
           }
-        ]
+        ],
+        margin: [0, 0, 0, 20] as [number, number, number, number]
       },
       
+      // Peças reparadas
       {
-        text: 'PEÇAS REPARADAS',
-        bold: true,
-        fontSize: 11,
-        margin: [0, 15, 0, 5],
-        color: '#2563EB'
+        stack: [
+          {
+            text: 'PEÇAS REPARADAS',
+            bold: true,
+            fontSize: 11,
+            color: colors.primary,
+            margin: [0, 0, 0, 5] as [number, number, number, number]
+          },
+          {
+            ul: service.repaired_parts && Array.isArray(service.repaired_parts) && service.repaired_parts.length > 0
+              ? service.repaired_parts.map(part => ({
+                  text: part,
+                  fontSize: 9,
+                  color: colors.text,
+                  margin: [0, 2, 0, 2] as [number, number, number, number]
+                }))
+              : [{ text: 'Nenhuma peça especificada', fontSize: 9, italics: true, color: colors.textLight }]
+          }
+        ],
+        margin: [0, 0, 0, 30] as [number, number, number, number]
       },
       
+      // Assinaturas
       {
-        ul: service.repaired_parts
+        columns: [
+          {
+            width: '40%',
+            stack: [
+              {
+                canvas: [
+                  { type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1, lineColor: colors.borderColor }
+                ]
+              },
+              {
+                text: 'Martelinho de Ouro (Responsável)',
+                alignment: 'center',
+                fontSize: 8,
+                color: colors.textLight,
+                margin: [0, 5, 0, 0] as [number, number, number, number]
+              }
+            ],
+            alignment: 'center'
+          },
+          { width: '20%', text: '' },
+          {
+            width: '40%',
+            stack: [
+              {
+                canvas: [
+                  { type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1, lineColor: colors.borderColor }
+                ]
+              },
+              {
+                text: 'Cliente',
+                alignment: 'center',
+                fontSize: 8,
+                color: colors.textLight,
+                margin: [0, 5, 0, 0] as [number, number, number, number]
+              }
+            ],
+            alignment: 'center'
+          }
+        ],
+        margin: [0, 20, 0, 0] as [number, number, number, number]
       },
       
-      // Adicionando condicionalmente as observações
-      ...createObservationsContentIfNeeded(service.observacoes)
-    ],
-    
-    styles: {
-      tableHeader: {
+      // Informações adicionais
+      {
+        text: 'INFORMAÇÕES ADICIONAIS',
+        fontSize: 8,
         bold: true,
-        fontSize: 10,
-        color: '#1F2937'
+        color: colors.textLight,
+        margin: [0, 30, 0, 5] as [number, number, number, number]
       },
-      tableExample: {
-        margin: [0, 5, 0, 10]
+      {
+        text: 'Este documento é válido como comprovante de serviço. A garantia é de 90 dias para defeitos relacionados ao serviço prestado.',
+        fontSize: 7,
+        color: colors.textLight,
+        margin: [0, 0, 0, 0] as [number, number, number, number]
       }
-    },
+    ],
     
     defaultStyle: {
       fontSize: 10,
-      color: '#374151'
+      lineHeight: 1.3
+    },
+    
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        margin: [0, 0, 0, 10] as [number, number, number, number],
+        color: colors.primary
+      },
+      subheader: {
+        fontSize: 14,
+        bold: true,
+        margin: [0, 10, 0, 5] as [number, number, number, number],
+        color: colors.primary
+      },
+      sectionHeader: {
+        fontSize: 12,
+        bold: true,
+        margin: [0, 15, 0, 5] as [number, number, number, number],
+        color: colors.primary
+      }
     }
   };
 }
@@ -561,7 +784,7 @@ export const generateInvoicePDF = (notaFiscal: NotaFiscal): void => {
     
     defaultStyle: {
       fontSize: 10,
-      color: '#374151'
+      lineHeight: 1.3
     }
   };
   
