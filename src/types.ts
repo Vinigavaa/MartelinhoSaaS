@@ -10,6 +10,7 @@ export interface Service {
   updated_at: string;
   auth_code?: string;
   observacoes?: string;
+  client_phone?: string;
 }
 
 export const REPAIRED_PARTS = [

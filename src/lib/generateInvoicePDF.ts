@@ -252,7 +252,7 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
                             margin: [0, 5, 0, 5] as [number, number, number, number]
                           },
                           {
-                            text: 'Telefone: Não informado',
+                            text: `Telefone: ${service.client_phone || 'Não informado'}`,
                             fontSize: 9,
                             margin: [0, 0, 0, 5] as [number, number, number, number]
                           }
@@ -944,6 +944,7 @@ function createSimpleDocDefinition(service: Service): TDocumentDefinitions {
       { text: `Data: ${service.service_date ? format(new Date(service.service_date), 'dd/MM/yyyy') : 'N/A'}`, margin: [0, 10, 0, 0] },
       { text: 'INFORMAÇÕES DO CLIENTE', style: 'sectionHeader', margin: [0, 15, 0, 5] },
       { text: `Nome: ${service.client_name}` },
+      { text: `Telefone: ${service.client_phone || 'Não informado'}` },
       { text: `Placa do Veículo: ${service.car_plate}` },
       { text: `Modelo do Veículo: ${service.car_model}` },
       

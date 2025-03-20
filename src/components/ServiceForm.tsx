@@ -20,6 +20,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
   // Estado inicial do formulário
   const [formData, setFormData] = useState({
     client_name: service?.client_name || '',
+    client_phone: service?.client_phone || '',
     service_date: service?.service_date 
       ? format(new Date(service.service_date), 'yyyy-MM-dd') 
       : format(new Date(), 'yyyy-MM-dd'),
@@ -29,6 +30,31 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
     repaired_parts: service?.repaired_parts || [REPAIRED_PARTS[0]]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * Função para formatar o telefone no padrão (XX) XXXXX-XXXX
+   */
+  const formatPhoneNumber = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numbers = value.replace(/\D/g, '');
+    
+    // Aplica a máscara conforme a quantidade de números
+    if (numbers.length <= 2) {
+      return `(${numbers}`;
+    } else if (numbers.length <= 7) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    } else {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  /**
+   * Handler para o campo de telefone
+   */
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedPhone = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, client_phone: formattedPhone });
+  };
 
   /**
    * Função para gerenciar a seleção de múltiplas peças reparadas
@@ -171,6 +197,19 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={formData.client_name}
                 onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+              />
+            </div>
+
+            {/* Telefone do Cliente */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone do Cliente (opcional)</label>
+              <input
+                type="text"
+                placeholder="(48) 99999-9999"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={formData.client_phone}
+                onChange={handlePhoneChange}
+                maxLength={15}
               />
             </div>
 
