@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Service, REPAIRED_PARTS } from '../types';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
-import { X } from 'lucide-react';
+import { X, Save, User, Phone, Calendar, DollarSign, Car, FileText } from 'lucide-react';
 
 interface ServiceFormProps {
   service?: Service;
@@ -173,25 +173,29 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-800 bg-opacity-75 flex items-center justify-center p-2 sm:p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-lg">
+          <h2 className="text-lg font-semibold text-white flex items-center">
+            <FileText className="w-5 h-5 mr-2" />
             {service ? 'Editar Serviço' : 'Novo Serviço'}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors p-2"
+            className="text-white hover:text-gray-200 transition-colors p-2"
             aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 sm:p-6 overflow-y-auto max-h-[80vh]">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[80vh] bg-gray-50">
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Nome do Cliente */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente</label>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <User className="w-4 h-4 mr-1 text-blue-600" />
+                Nome do Cliente
+              </label>
               <input
                 type="text"
                 required
@@ -202,8 +206,11 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
             </div>
 
             {/* Telefone do Cliente */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone do Cliente (opcional)</label>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <Phone className="w-4 h-4 mr-1 text-blue-600" />
+                Telefone do Cliente (opcional)
+              </label>
               <input
                 type="text"
                 placeholder="(48) 99999-9999"
@@ -216,8 +223,11 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
 
             {/* Data e Valor do Serviço */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Data do Serviço</label>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <Calendar className="w-4 h-4 mr-1 text-blue-600" />
+                  Data do Serviço
+                </label>
                 <input
                   type="date"
                   required
@@ -227,14 +237,17 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Valor do Serviço</label>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <DollarSign className="w-4 h-4 mr-1 text-emerald-600" />
+                  Valor do Serviço
+                </label>
                 <input
                   type="number"
                   required
                   step="0.01"
                   min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   value={formData.service_value}
                   onChange={(e) => setFormData({ ...formData, service_value: parseFloat(e.target.value) })}
                 />
@@ -243,8 +256,11 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
 
             {/* Dados do Veículo */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Placa do Carro</label>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <Car className="w-4 h-4 mr-1 text-blue-600" />
+                  Placa do Carro
+                </label>
                 <input
                   type="text"
                   required
@@ -254,8 +270,11 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Modelo do Carro</label>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <Car className="w-4 h-4 mr-1 text-blue-600" />
+                  Modelo do Carro
+                </label>
                 <input
                   type="text"
                   required
@@ -267,11 +286,14 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
             </div>
 
             {/* Peças Reparadas */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Peças Reparadas (selecione uma ou mais)</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 max-h-[40vh] overflow-y-auto p-2 border border-gray-200 rounded-md">
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <FileText className="w-4 h-4 mr-1 text-blue-600" />
+                Peças Reparadas (selecione uma ou mais)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 max-h-[40vh] overflow-y-auto p-2 border border-gray-200 rounded-md bg-gray-50">
                 {REPAIRED_PARTS.map((part) => (
-                  <div key={part} className="flex items-center bg-gray-50 p-2 sm:p-3 rounded-md border border-gray-200">
+                  <div key={part} className={`flex items-center p-2 sm:p-3 rounded-md border ${formData.repaired_parts.includes(part) ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'} transition-colors`}>
                     <input
                       type="checkbox"
                       id={`part-${part}`}
@@ -292,7 +314,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto transition-colors shadow-sm"
                 disabled={isSubmitting}
               >
                 Cancelar
@@ -300,7 +322,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-2 sm:mb-0"
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border border-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-2 sm:mb-0 shadow-sm flex items-center justify-center"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">
@@ -311,7 +333,10 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
                     {service ? 'Atualizando...' : 'Cadastrando...'}
                   </span>
                 ) : (
-                  service ? 'Atualizar' : 'Cadastrar'
+                  <span className="flex items-center">
+                    <Save className="w-4 h-4 mr-1" />
+                    {service ? 'Atualizar' : 'Cadastrar'}
+                  </span>
                 )}
               </button>
             </div>

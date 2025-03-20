@@ -374,22 +374,22 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
     <div className="min-h-screen bg-gray-50">
       
       {/* Header Simplificado */}
-      <div className="sticky top-0 bg-white border-b border-gray-100 z-50">
+      <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-700 border-b border-blue-700 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button 
               onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white hover:bg-opacity-10 rounded-lg transition-colors text-white"
             >
-              <ArrowLeft className="h-5 w-5 text-gray-600" />
+              <ArrowLeft className="h-5 w-5 text-white" />
             </button>
-            <h1 className="text-2xl font-semibold text-gray-900">Busca Avançada</h1>
+            <h1 className="text-2xl font-semibold text-white">Busca Avançada</h1>
           </div>
           
           {filteredServices.length > 0 && (
             <button
               onClick={exportarParaCSV}
-              className="flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
+              className="flex items-center px-3 py-2 text-sm font-medium text-emerald-700 bg-white rounded-lg hover:bg-emerald-50 shadow-sm transition-colors"
             >
               <Download className="h-4 w-4 mr-2" />
               Exportar
@@ -401,12 +401,15 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Card de Filtros */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-100 p-6 mb-8 shadow-md">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-medium text-gray-900">Filtros</h2>
+            <h2 className="text-lg font-medium text-gray-900 flex items-center">
+              <Search className="h-5 w-5 mr-2 text-blue-600" />
+              Filtros
+            </h2>
             <button
               onClick={clearFilters}
-              className="flex items-center text-sm text-gray-600 hover:text-gray-900"
+              className="flex items-center text-sm text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
             >
               <X className="h-4 w-4 mr-1" />
               Limpar filtros
@@ -420,7 +423,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
               <select
                 value={mesFilter}
                 onChange={(e) => setMesFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm"
               >
                 {MESES.map((mes) => (
                   <option key={mes.value} value={mes.value}>
@@ -439,7 +442,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
                   value={clienteFilter}
                   onChange={(e) => setClienteFilter(e.target.value)}
                   placeholder="Buscar cliente..."
-                  className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                 />
                 <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
               </div>
@@ -454,7 +457,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
                   value={modeloFilter}
                   onChange={(e) => setModeloFilter(e.target.value)}
                   placeholder="Buscar modelo..."
-                  className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                 />
                 <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
               </div>
@@ -469,7 +472,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
                   value={placaFilter}
                   onChange={(e) => setPlacaFilter(e.target.value)}
                   placeholder="Buscar placa..."
-                  className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                 />
                 <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
               </div>
@@ -484,7 +487,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
             <p className="mt-4 text-gray-600">Carregando serviços...</p>
           </div>
         ) : filteredServices.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <div className="bg-white rounded-xl border border-gray-100 p-8 text-center shadow-md">
             <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
               <Search className="w-full h-full" />
             </div>
@@ -492,9 +495,9 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
             <p className="text-gray-600">Tente ajustar os filtros de busca</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-md">
             {/* Cabeçalho da Tabela */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-600">
                   Exibindo {servicosPaginados.length} de {filteredServices.length} 
@@ -507,23 +510,23 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
             {/* Tabela Modernizada */}
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <tr>
                     {renderCabecalhoOrdenacao('client_name', 'Cliente')}
                     {renderCabecalhoOrdenacao('service_date', 'Data')}
                     {renderCabecalhoOrdenacao('car_model', 'Veículo')}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Peças Reparadas
                     </th>
                     {renderCabecalhoOrdenacao('service_value', 'Valor')}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {servicosPaginados.map((service) => (
-                    <tr key={service.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={service.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">{service.client_name}</div>
                         <div className="text-xs text-gray-500 mt-1">{service.auth_code}</div>
@@ -536,7 +539,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
                         <div className="text-xs text-gray-500">{service.car_plate}</div>
                       </td>
                       <td className="px-6 py-4 max-w-xs">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-700">
                           {formatRepairedParts(service.repaired_parts)}
                         </div>
                       </td>
@@ -546,24 +549,24 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
                           currency: 'BRL',
                         }).format(service.service_value)}
                       </td>
-                      <td className="px-6 py-4 space-x-2">
+                      <td className="px-6 py-4 space-x-2 whitespace-nowrap">
                         <button
                           onClick={() => handleGenerateInvoice(service)}
-                          className="p-2 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
+                          className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center justify-center"
                           title="Gerar Nota Fiscal"
                         >
                           <FileText className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleEdit(service)}
-                          className="p-2 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                          className="p-2 hover:bg-emerald-50 rounded-lg text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center justify-center"
                           title="Editar"
                         >
                           <Pencil className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(service.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                          className="p-2 hover:bg-rose-50 rounded-lg text-rose-600 hover:text-rose-800 transition-colors inline-flex items-center justify-center"
                           title="Excluir"
                         >
                           <Trash2 className="h-5 w-5" />
@@ -577,7 +580,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
             
             {/* Paginação */}
             {totalPaginas > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 flex items-center justify-between">
                 <div className="text-sm text-gray-600">
                   Página {paginaAtual} de {totalPaginas}
                 </div>

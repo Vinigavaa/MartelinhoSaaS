@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Pencil, Trash2, Plus, Search, PieChart, FileText, LogOut, User, Filter } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search, PieChart, FileText, LogOut, User, Filter, AlertCircle } from 'lucide-react';
 import { ServiceForm } from './components/ServiceForm';
 import { FinanceDashboard } from './components/FinanceDashboard';
 import { Service } from './types';
@@ -314,29 +314,29 @@ function App() {
 
   // Interface principal padrão
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-          <h1 className="text-2xl font-bold text-blue-900">MartelinhoSaaS</h1>
+          <h1 className="text-2xl font-bold text-white">MartelinhoSaaS</h1>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             {userProfile && (
               <div className="flex items-center mb-2 sm:mb-0">
-                <div className="bg-blue-100 rounded-full p-2 mr-3">
-                  <User className="h-5 w-5 text-blue-600" />
+                <div className="bg-white bg-opacity-20 rounded-full p-2 mr-3">
+                  <User className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{userProfile.full_name}</p>
-                  <p className="text-xs text-gray-500">{userProfile.company_name}</p>
+                  <p className="text-sm font-medium text-white">{userProfile.full_name}</p>
+                  <p className="text-xs text-blue-100">{userProfile.company_name}</p>
                 </div>
               </div>
             )}
             
             <button
               onClick={handleLogout}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors w-full sm:w-auto"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors w-full sm:w-auto"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -347,7 +347,7 @@ function App() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Toolbar */}
-        <div className="bg-white shadow rounded-lg mb-6 p-4">
+        <div className="bg-white shadow-md rounded-lg mb-6 p-4 border border-gray-100">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="w-full sm:flex-1">
               <div className="relative rounded-md shadow-sm">
@@ -370,7 +370,7 @@ function App() {
                   console.log('Abrindo busca avançada');
                   setIsAdvancedSearchOpen(true);
                 }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shadow-sm"
               >
                 <Filter className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden xs:inline">Busca Avançada</span>
@@ -379,7 +379,7 @@ function App() {
               
               <button
                 onClick={() => setIsDashboardOpen(true)}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm"
               >
                 <PieChart className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden xs:inline">Dashboard</span>
@@ -388,7 +388,7 @@ function App() {
               
               <button
                 onClick={() => { setIsFormOpen(true); setEditingService(undefined); }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors shadow-sm"
               >
                 <Plus className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden xs:inline">Novo Serviço</span>
@@ -400,12 +400,10 @@ function App() {
         
         {/* Status message */}
         {filteredServices.length === 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+          <div className="bg-blue-50 border-l-4 border-blue-500 rounded-md p-4 mb-6 shadow-sm">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
+                <AlertCircle className="h-5 w-5 text-blue-400" />
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-blue-800">
@@ -425,48 +423,48 @@ function App() {
         
         {/* Services table */}
         {filteredServices.length > 0 && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="bg-white shadow-md overflow-hidden rounded-lg border border-gray-100">
             {/* Versão para desktop */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Data
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Veículo
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Peças Reparadas
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Valor
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredServices.map((service) => (
-                    <tr key={service.id} className="hover:bg-gray-50">
+                    <tr key={service.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{service.client_name}</div>
                         <div className="text-xs text-gray-500">Código: {service.auth_code}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatLocalDate(service.service_date)}</div>
+                        <div className="text-sm text-gray-700">{formatLocalDate(service.service_date)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{service.car_model}</div>
                         <div className="text-xs text-gray-500">{service.car_plate}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{formatRepairedParts(service.repaired_parts)}</div>
+                        <div className="text-sm text-gray-700">{formatRepairedParts(service.repaired_parts)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
@@ -485,7 +483,7 @@ function App() {
                           
                           <button
                             onClick={() => handleEdit(service)}
-                            className="text-green-600 hover:text-green-900 bg-green-100 p-2 rounded-md hover:bg-green-200 transition-colors"
+                            className="text-emerald-600 hover:text-emerald-900 bg-emerald-100 p-2 rounded-md hover:bg-emerald-200 transition-colors"
                             title="Editar"
                           >
                             <Pencil className="h-4 w-4" />
@@ -493,7 +491,7 @@ function App() {
                           
                           <button
                             onClick={() => handleDelete(service.id)}
-                            className="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-md hover:bg-red-200 transition-colors"
+                            className="text-rose-600 hover:text-rose-900 bg-rose-100 p-2 rounded-md hover:bg-rose-200 transition-colors"
                             title="Excluir"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -510,7 +508,7 @@ function App() {
             <div className="md:hidden">
               <ul className="divide-y divide-gray-200">
                 {filteredServices.map((service) => (
-                  <li key={service.id} className="p-4 hover:bg-gray-50">
+                  <li key={service.id} className="p-4 hover:bg-blue-50 transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="text-sm font-medium text-gray-900">{service.client_name}</h3>
@@ -521,7 +519,7 @@ function App() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3">
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
                       <div>
                         <span className="font-medium">Data: </span>
                         {formatLocalDate(service.service_date)}
@@ -543,7 +541,7 @@ function App() {
                     <div className="flex justify-end space-x-2 mt-2">
                       <button
                         onClick={() => handleGenerateInvoice(service)}
-                        className="text-blue-600 hover:text-blue-900 bg-blue-100 p-2 rounded-md hover:bg-blue-200 transition-colors"
+                        className="text-blue-600 hover:text-blue-800 bg-blue-100 p-2 rounded-md hover:bg-blue-200 transition-colors"
                         title="Gerar Nota Fiscal"
                       >
                         <FileText className="h-4 w-4" />
@@ -551,7 +549,7 @@ function App() {
                       
                       <button
                         onClick={() => handleEdit(service)}
-                        className="text-green-600 hover:text-green-900 bg-green-100 p-2 rounded-md hover:bg-green-200 transition-colors"
+                        className="text-emerald-600 hover:text-emerald-800 bg-emerald-100 p-2 rounded-md hover:bg-emerald-200 transition-colors"
                         title="Editar"
                       >
                         <Pencil className="h-4 w-4" />
@@ -559,7 +557,7 @@ function App() {
                       
                       <button
                         onClick={() => handleDelete(service.id)}
-                        className="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-md hover:bg-red-200 transition-colors"
+                        className="text-rose-600 hover:text-rose-800 bg-rose-100 p-2 rounded-md hover:bg-rose-200 transition-colors"
                         title="Excluir"
                       >
                         <Trash2 className="h-4 w-4" />
