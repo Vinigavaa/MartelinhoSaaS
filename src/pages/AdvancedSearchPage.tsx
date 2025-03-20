@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Service } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { Pencil, Trash2, FileText, ArrowLeft, Search, X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { generateAndDownloadPDF } from '../lib/generateInvoicePDF';
 
 const MESES = [
@@ -372,7 +372,6 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       
       {/* Header Simplificado */}
       <div className="sticky top-0 bg-white border-b border-gray-100 z-50">

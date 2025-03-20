@@ -171,7 +171,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-800 bg-opacity-75 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-800 bg-opacity-75 flex items-center justify-center p-2 sm:p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-800">
@@ -180,13 +180,14 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors"
+            className="text-gray-400 hover:text-gray-500 transition-colors p-2"
+            aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[80vh]">
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Nome do Cliente */}
             <div>
@@ -268,7 +269,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
             {/* Peças Reparadas */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Peças Reparadas (selecione uma ou mais)</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 max-h-[40vh] overflow-y-auto p-2 border border-gray-200 rounded-md">
                 {REPAIRED_PARTS.map((part) => (
                   <div key={part} className="flex items-center bg-gray-50 p-2 sm:p-3 rounded-md border border-gray-200">
                     <input
@@ -276,9 +277,9 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
                       id={`part-${part}`}
                       checked={formData.repaired_parts.includes(part)}
                       onChange={() => handleRepairedPartsChange(part)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor={`part-${part}`} className="ml-3 text-sm text-gray-700">
+                    <label htmlFor={`part-${part}`} className="ml-3 text-sm text-gray-700 cursor-pointer flex-1">
                       {part.charAt(0).toUpperCase() + part.slice(1)}
                     </label>
                   </div>
@@ -287,7 +288,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
             </div>
 
             {/* Botões de Ação */}
-            <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
@@ -299,7 +300,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-2 sm:mb-0"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">

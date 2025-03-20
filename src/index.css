@@ -34,6 +34,51 @@ body {
   }
 }
 
+/* Variável para breakpoint xs customizado */
+@layer base {
+  @variants responsive {
+    .xs\:hidden {
+      display: none;
+    }
+    .xs\:block {
+      display: block;
+    }
+    .xs\:inline {
+      display: inline;
+    }
+    .xs\:inline-block {
+      display: inline-block;
+    }
+    .xs\:flex {
+      display: flex;
+    }
+  }
+}
+
+/* Melhorias para dispositivos móveis */
+@media (max-width: 640px) {
+  /* Touch targets maiores para elementos interativos */
+  button, 
+  [role="button"],
+  .btn-primary, 
+  .btn-secondary,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevenir overflow horizontal e melhorar legibilidade */
+  main {
+    overflow-x: hidden;
+  }
+  
+  /* Melhorar tamanho da fonte em dispositivos móveis */
+  body {
+    font-size: 16px;
+  }
+}
+
 /* Animações */
 @keyframes fadeIn {
   from { opacity: 0; }

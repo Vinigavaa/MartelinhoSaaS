@@ -6,7 +6,7 @@ import { ServiceForm } from './components/ServiceForm';
 import { FinanceDashboard } from './components/FinanceDashboard';
 import { Service } from './types';
 import { supabase } from './lib/supabase';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { generateAndDownloadPDF } from './lib/generateInvoicePDF';
 import { AuthPage } from './pages/AuthPage';
 import { AdvancedSearchPage } from './pages/AdvancedSearchPage';
@@ -296,7 +296,6 @@ function App() {
   if (isAdvancedSearchOpen) {
     return (
       <div className="min-h-screen bg-gray-100">
-        <Toaster position="top-right" />
         <AdvancedSearchPage onBack={handleAdvancedSearchSuccess} />
         
         {/* Modals que podem ser mostrados mesmo durante a busca avançada */}
@@ -316,16 +315,15 @@ function App() {
   // Interface principal padrão
   return (
     <div className="min-h-screen bg-gray-100">
-      <Toaster position="top-right" />
       
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
           <h1 className="text-2xl font-bold text-blue-900">MartelinhoSaaS</h1>
           
-          <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             {userProfile && (
-              <div className="flex items-center">
+              <div className="flex items-center mb-2 sm:mb-0">
                 <div className="bg-blue-100 rounded-full p-2 mr-3">
                   <User className="h-5 w-5 text-blue-600" />
                 </div>
@@ -338,7 +336,7 @@ function App() {
             
             <button
               onClick={handleLogout}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors w-full sm:w-auto"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -350,15 +348,15 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Toolbar */}
         <div className="bg-white shadow rounded-lg mb-6 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div className="w-full sm:flex-1">
               <div className="relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
-                  className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2"
+                  className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 text-sm border-gray-300 rounded-md py-2"
                   placeholder="Buscar cliente ou placa..."
                   value={searchTerm}
                   onChange={(e) => filterServices(e.target.value)}
@@ -366,32 +364,35 @@ function App() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
               <button
                 onClick={() => {
                   console.log('Abrindo busca avançada');
                   setIsAdvancedSearchOpen(true);
                 }}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
               >
-                <Filter className="h-4 w-4 mr-2" />
-                Busca Avançada
+                <Filter className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Busca Avançada</span>
+                <span className="xs:hidden">Filtrar</span>
               </button>
               
               <button
                 onClick={() => setIsDashboardOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
-                <PieChart className="h-4 w-4 mr-2" />
-                Dashboard
+                <PieChart className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Dashboard</span>
+                <span className="xs:hidden">Stats</span>
               </button>
               
               <button
                 onClick={() => { setIsFormOpen(true); setEditingService(undefined); }}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Serviço
+                <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Novo Serviço</span>
+                <span className="xs:hidden">Novo</span>
               </button>
             </div>
           </div>
@@ -425,7 +426,8 @@ function App() {
         {/* Services table */}
         {filteredServices.length > 0 && (
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="overflow-x-auto">
+            {/* Versão para desktop */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -471,35 +473,101 @@ function App() {
                           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(service.service_value)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => handleGenerateInvoice(service)}
-                          className="text-blue-600 hover:text-blue-900 bg-blue-100 p-2 rounded-md hover:bg-blue-200 transition-colors"
-                          title="Gerar Nota Fiscal"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </button>
-                        
-                        <button
-                          onClick={() => handleEdit(service)}
-                          className="text-green-600 hover:text-green-900 bg-green-100 p-2 rounded-md hover:bg-green-200 transition-colors"
-                          title="Editar"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        
-                        <button
-                          onClick={() => handleDelete(service.id)}
-                          className="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-md hover:bg-red-200 transition-colors"
-                          title="Excluir"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex space-x-2 justify-end">
+                          <button
+                            onClick={() => handleGenerateInvoice(service)}
+                            className="text-blue-600 hover:text-blue-900 bg-blue-100 p-2 rounded-md hover:bg-blue-200 transition-colors"
+                            title="Gerar Nota Fiscal"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleEdit(service)}
+                            className="text-green-600 hover:text-green-900 bg-green-100 p-2 rounded-md hover:bg-green-200 transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleDelete(service.id)}
+                            className="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-md hover:bg-red-200 transition-colors"
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+            
+            {/* Versão para dispositivos móveis - cards em vez de tabela */}
+            <div className="md:hidden">
+              <ul className="divide-y divide-gray-200">
+                {filteredServices.map((service) => (
+                  <li key={service.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-900">{service.client_name}</h3>
+                        <p className="text-xs text-gray-500 mt-1">Código: {service.auth_code}</p>
+                      </div>
+                      <div className="text-sm font-bold text-gray-900">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(service.service_value)}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3">
+                      <div>
+                        <span className="font-medium">Data: </span>
+                        {formatLocalDate(service.service_date)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Veículo: </span>
+                        {service.car_model}
+                      </div>
+                      <div>
+                        <span className="font-medium">Placa: </span>
+                        {service.car_plate}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-medium">Peças: </span>
+                        {formatRepairedParts(service.repaired_parts)}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 mt-2">
+                      <button
+                        onClick={() => handleGenerateInvoice(service)}
+                        className="text-blue-600 hover:text-blue-900 bg-blue-100 p-2 rounded-md hover:bg-blue-200 transition-colors"
+                        title="Gerar Nota Fiscal"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => handleEdit(service)}
+                        className="text-green-600 hover:text-green-900 bg-green-100 p-2 rounded-md hover:bg-green-200 transition-colors"
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => handleDelete(service.id)}
+                        className="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-md hover:bg-red-200 transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}
