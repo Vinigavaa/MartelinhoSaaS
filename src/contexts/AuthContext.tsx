@@ -90,8 +90,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
+      // Verificar se há uma sessão atual antes de tentar fazer logout
+      const { data } = await supabase.auth.getSession();
+      
+      if (!data.session) {
+        // Se não há sessão, apenas atualizar o estado
+        setUser(null);
+        return;
+      }
+      
+      // Se há sessão, fazer logout normalmente
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      // Mesmo com erro, limpar o estado do usuário
+      setUser(null);
     } finally {
       setLoading(false);
     }

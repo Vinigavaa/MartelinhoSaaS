@@ -206,7 +206,8 @@ function App() {
       toast.success('Logout realizado com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      toast.error('Erro ao fazer logout');
+      // Não exibir toast de erro para não confundir o usuário
+      // O AuthContext já trata a limpeza do estado mesmo em caso de erro
     }
   };
 
