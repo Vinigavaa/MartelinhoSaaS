@@ -470,7 +470,7 @@ export function AdvancedSearchPage({ onBack }: { onBack: () => void }) {
                 <input
                   type="text"
                   value={placaFilter}
-                  onChange={(e) => setPlacaFilter(e.target.value)}
+                  onChange={(e) => setPlacaFilter(e.target.value.toUpperCase())}
                   placeholder="Buscar placa..."
                   className="w-full px-3 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
                 />

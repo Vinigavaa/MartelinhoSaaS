@@ -123,6 +123,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
       .from('services')
       .update({
         ...formData,
+        car_plate: formData.car_plate.toUpperCase(),
         service_date: formattedDate,
         tenant_id: tenant_id,
         updated_at: new Date().toISOString()
@@ -143,6 +144,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
   const createNewService = async (formattedDate: string) => {
     const dataToSend = {
       ...formData,
+      car_plate: formData.car_plate.toUpperCase(),
       tenant_id: tenant_id,
       service_date: formattedDate,
       service_value: typeof formData.service_value === 'string' 
@@ -266,7 +268,7 @@ export function ServiceForm({ service, onSuccess, onClose, isOpen, tenant_id }: 
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   value={formData.car_plate}
-                  onChange={(e) => setFormData({ ...formData, car_plate: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, car_plate: e.target.value.toUpperCase() })}
                 />
               </div>
 

@@ -299,7 +299,7 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
                             margin: [0, 5, 0, 5] as [number, number, number, number]
                           },
                           {
-                            text: `Placa: ${service.car_plate}`,
+                            text: `Placa: ${service.car_plate?.toUpperCase() || ''}`,
                             fontSize: 9,
                             margin: [0, 0, 0, 5] as [number, number, number, number]
                           }
@@ -826,7 +826,7 @@ export const serviceToNotaFiscal = (service: any): NotaFiscal => {
     },
     veiculo: {
       modelo: service.car_model,
-      placa: service.car_plate
+      placa: service.car_plate?.toUpperCase() || ''
     },
     servicos,
     data: service.service_date,

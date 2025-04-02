@@ -461,7 +461,7 @@ function App() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{service.car_model}</div>
-                        <div className="text-xs text-gray-500">{service.car_plate}</div>
+                        <div className="text-xs text-gray-500">{service.car_plate?.toUpperCase()}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-700">{formatRepairedParts(service.repaired_parts)}</div>
@@ -530,7 +530,7 @@ function App() {
                       </div>
                       <div>
                         <span className="font-medium">Placa: </span>
-                        {service.car_plate}
+                        {service.car_plate?.toUpperCase()}
                       </div>
                       <div className="col-span-2">
                         <span className="font-medium">Peças: </span>
