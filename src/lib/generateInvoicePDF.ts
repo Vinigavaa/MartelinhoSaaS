@@ -143,7 +143,7 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
       margin: [40, 20, 40, 0] as [number, number, number, number],
       columns: [
         {
-          text: 'MARTELINHO DE OURO',
+          text: 'AUTOFY',
           bold: true,
           fontSize: 16,
           color: colors.primary
@@ -162,7 +162,7 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
       margin: [40, 0, 40, 0] as [number, number, number, number],
       columns: [
         {
-          text: 'Martelinho de Ouro Ltda.',
+          text: 'Autofy Ltda.',
           fontSize: 8,
           color: colors.textLight
         },
@@ -468,7 +468,7 @@ function createDocDefinition(service: Service): TDocumentDefinitions {
                 ]
               },
               {
-                text: 'Martelinho de Ouro (Responsável)',
+                text: 'Autofy (Responsável)',
                 alignment: 'center',
                 fontSize: 8,
                 color: colors.textLight,
@@ -602,7 +602,7 @@ export const generateInvoicePDF = (notaFiscal: NotaFiscal): void => {
           margin: [40, 20, 0, 0]
         },
         {
-          text: 'MARTELINHO DE OURO',
+          text: 'AUTOFY',
           alignment: 'center',
           margin: [0, 20, 0, 0],
           fontSize: 16,
@@ -938,7 +938,7 @@ function createSimpleDocDefinition(service: Service): TDocumentDefinitions {
     pageMargins: [40, 60, 40, 60],
     
     content: [
-      { text: 'MARTELINHO DE OURO', style: 'header' },
+      { text: 'AUTOFY', style: 'header' },
       { text: 'NOTA FISCAL DE SERVIÇO', style: 'subheader' },
       { text: `Código de Autenticação: ${service.auth_code || 'N/A'}`, style: 'auth' },
       { text: `Data: ${service.service_date ? format(new Date(service.service_date), 'dd/MM/yyyy') : 'N/A'}`, margin: [0, 10, 0, 0] },

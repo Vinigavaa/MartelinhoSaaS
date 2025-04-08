@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LoginForm } from '../components/LoginForm';
 import { RegisterForm } from '../components/RegisterForm';
+import logoImg from '../assets/logo.png';
 
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,9 +10,9 @@ export function AuthPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-            MartelinhoSaaS
-          </h1>
+          <div className="flex justify-center">
+            <img src={logoImg} alt="Autofy" className="h-14" />
+          </div>
           <p className="mt-2 text-sm md:text-base text-blue-600">
             Sistema de Gestão para Funilaria e Pintura
           </p>
